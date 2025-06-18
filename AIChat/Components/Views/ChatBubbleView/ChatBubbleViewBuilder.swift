@@ -12,6 +12,8 @@ struct ChatBubbleViewBuilder: View {
     var message: ChatMessageModel = .mock
     var isCurrentUser: Bool = false
     var imageName: String?
+    var onImagePressed: (() -> Void)?
+
 
     var body: some View {
         ChatBubbleView(
@@ -20,7 +22,8 @@ struct ChatBubbleViewBuilder: View {
             backgroundColor: isCurrentUser
                 ? .accent : Color(uiColor: .systemGray6),
             showImage: !isCurrentUser,
-            imageName: imageName
+            imageName: imageName,
+            onImagePressed: onImagePressed
         )
         .frame(
             maxWidth: .infinity,
