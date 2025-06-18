@@ -9,40 +9,43 @@ import SwiftUI
 
 struct ProfileView: View {
 
-    @State private var showSettingView: Bool = false
+    @State private var showSettingsView: Bool = false
     @State private var showCreateAvatarView: Bool = false
     @State private var currentUser: UserModel? = .mock
     @State private var myAvatars: [AvatarModel] = []
     @State private var isLoading: Bool = true
 
+    @State private var path: [NavigationPathOption] = []
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 myInfoSection
                 myAvatarsSection
             }
             .navigationTitle("Profile")
+            .navigationDestinationForCoreModule(path: $path)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     settingsButton
                 }
             }
-            .sheet(isPresented: $showSettingView) {
-                Text("SettingsView")
-            }
-            .fullScreenCover(isPresented: $showCreateAvatarView) {
-                CreateAvatarView()
-            }
-            .task {
-                await loadData()
-            }
+        }
+        .sheet(isPresented: $showSettingsView) {
+            SettingsView()
+        }
+        .fullScreenCover(isPresented: $showCreateAvatarView) {
+            CreateAvatarView()
+        }
+        .task {
+            await loadData()
         }
     }
 
     private func loadData() async {
         try? await Task.sleep(for: .seconds(5))
-        myAvatars = AvatarModel.mocks
         isLoading = false
+        myAvatars = AvatarModel.mocks
     }
 
     private var myInfoSection: some View {
@@ -77,12 +80,12 @@ struct ProfileView: View {
                     CustomListCellView(
                         imageName: avatar.profileImageName,
                         title: avatar.name,
-                        subtitle: nil,
+                        subtitle: nil
                     )
                     .anyButton(
                         .highlight,
                         action: {
-
+                            onAvatarPressed(avatar: avatar)
                         }
                     )
                     .removeListRowFormatting()
@@ -90,12 +93,12 @@ struct ProfileView: View {
                 .onDelete { indexSet in
                     onDeleteAvatar(indexSet: indexSet)
                 }
-
             }
         } header: {
             HStack(spacing: 0) {
                 Text("My avatars")
                 Spacer()
+
                 Image(systemName: "plus.circle.fill")
                     .font(.title)
                     .foregroundStyle(.accent)
@@ -113,15 +116,18 @@ struct ProfileView: View {
             .anyButton {
                 onSettingsButtonPressed()
             }
-
     }
 
     private func onSettingsButtonPressed() {
-        showSettingView = true
+        showSettingsView = true
     }
 
     private func onNewAvatarButtonPressed() {
         showCreateAvatarView = true
+    }
+
+    private func onAvatarPressed(avatar: AvatarModel) {
+        path.append(.chat(avatarId: avatar.avatarId))
     }
 
     private func onDeleteAvatar(indexSet: IndexSet) {
