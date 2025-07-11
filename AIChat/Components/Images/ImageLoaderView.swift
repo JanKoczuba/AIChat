@@ -14,7 +14,6 @@ struct ImageLoaderView: View {
     var resizingMode: ContentMode = .fill
     var forceTransitionAnimation: Bool = false
 
-
     var body: some View {
         Rectangle()
             .opacity(0.00001)
