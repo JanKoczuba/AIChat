@@ -18,7 +18,7 @@ class AuthManager {
     init(service: AuthService) {
         self.service = service
         self.auth = service.getAuthenticatedUser()
-        addAuthListener()
+        self.addAuthListener()
     }
 
     private func addAuthListener() {
