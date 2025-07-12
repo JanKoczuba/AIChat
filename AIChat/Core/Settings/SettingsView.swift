@@ -40,7 +40,7 @@ struct SettingsView: View {
             .onAppear {
                 setAnonymousAccountStatus()
             }
-            .showCustomAlert(alert: showAlert)
+            .showCustomAlert(alert: $showAlert)
         }
     }
 
@@ -197,9 +197,30 @@ struct SettingsView: View {
 
 }
 
-#Preview {
+#Preview("no auth") {
     SettingsView()
-        .environment(AppState(showTabBarView: true))
+        .environment(
+            \.authService,
+            MockAuthService(user: nil)
+        )
+        .environment(AppState())
+}
+#Preview("Anonymous") {
+    SettingsView()
+        .environment(
+            \.authService,
+            MockAuthService(user: UserAuthInfo.mock(isAnonymous: true))
+        )
+        .environment(AppState())
+}
+#Preview("Not anonymous") {
+    SettingsView()
+        .environment(
+            \.authService,
+            MockAuthService(user: UserAuthInfo.mock(isAnonymous: false))
+        )
+
+        .environment(AppState())
 }
 
 extension View {

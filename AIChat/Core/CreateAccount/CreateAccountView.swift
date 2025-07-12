@@ -46,11 +46,11 @@ struct CreateAccountView: View {
     func onSignInApplePressed() {
         Task {
             do {
-                let result = authService.signInApple()
+                let result = try await authService.signInApple()
 
                 print("Did sign in with Apple")
                 onDidSignIn?(result.isNewUser)
-                dismiss()
+                dismiss()
             } catch {
                 print("Error signing in with Apple")
 
