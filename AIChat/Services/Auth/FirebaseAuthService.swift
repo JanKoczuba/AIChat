@@ -50,7 +50,9 @@ struct FirebaseAuthService {
                     if let secondaryCredential = error.userInfo[
                         "FIRAuthErrorUserInfoUpdatedCredentialKey"
                     ] as? AuthCredential {
-                        let result = try await Auth.auth().signIn(with: secondaryCredential)
+                        let result = try await Auth.auth().signIn(
+                            with: secondaryCredential
+                        )
                         return result.asAuthInfo
                     }
                     break
@@ -69,7 +71,7 @@ struct FirebaseAuthService {
         try Auth.auth().signOut()
     }
 
-    func deleteAccount() {
+    func deleteAccount() async throws {
         guard let user = Auth.auth().currentUser else {
             throw AuthError.userNotFound
         }
