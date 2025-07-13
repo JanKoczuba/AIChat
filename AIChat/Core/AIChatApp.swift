@@ -16,16 +16,17 @@ struct AIChatApp: App {
     var body: some Scene {
         WindowGroup {
             AppView()
-                .environment(delegate.userManager)
-                .environment(delegate.authManager)
+                .environment(delegate.dependencies.userManager)
+                .environment(delegate.dependencies.authManager)
+                .environment(delegate.dependencies.aiManager)
+
 
         }
     }
 }
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-    var authManager: AuthManager!
-    var userManager: UserManager!
+    var  dependencies: Dependencies!
 
     func application(
         _ application: UIApplication,
@@ -34,9 +35,21 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         FirebaseApp.configure()
 
-        authManager = AuthManager(service: FirebaseAuthService())
-        userManager = UserManager(services: ProductionUserServices())
+        dependencies = Dependencies()
 
         return true
+    }
+}
+
+@MainActor
+struct Dependencies {
+    let authManager: AuthManager
+    let userManager: UserManager
+    let aiManager: AIManager
+
+    init() {
+        self.authManager = AuthManager(service: FirebaseAuthService())
+        self.userManager = UserManager(services: ProductionUserServices())
+        self.aiManager = AIManager(service: OpenAIService())
     }
 }
