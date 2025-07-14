@@ -25,7 +25,7 @@ struct AIChatApp: App {
 }
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-    var  dependencies: Dependencies!
+    var dependencies: Dependencies!
 
     func application(
         _ application: UIApplication,
@@ -51,6 +51,28 @@ struct Dependencies {
         authManager = AuthManager(service: FirebaseAuthService())
         userManager = UserManager(services: ProductionUserServices())
         aiManager = AIManager(service: OpenAIService())
-        avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistance())
+        avatarManager = AvatarManager(
+            remote: FirebaseAvatarService(),
+            local: SwiftDataLocalAvatarPersistance()
+        )
+    }
+}
+
+extension View {
+    func previewEnvironment(isSignedIn: Bool = true) -> some View {
+        self
+            .environment(AIManager(service: MockAIService()))
+            .environment(AvatarManager(remote: MockAvatarService()))
+            .environment(
+                UserManager(
+                    services: MockUserServices(user: isSignedIn ? .mock : nil)
+                )
+            )
+            .environment(
+                AuthManager(
+                    service: MockAuthService(user: isSignedIn ? .mock() : nil)
+                )
+            )
+            .environment(AppState())
     }
 }
