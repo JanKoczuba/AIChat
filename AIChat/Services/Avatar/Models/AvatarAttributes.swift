@@ -5,7 +5,7 @@
 //  Created by Jan Koczuba on 02/06/2025.
 //
 
-enum CharacterOption: String, CaseIterable, Hashable {
+enum CharacterOption: String, CaseIterable, Hashable, Codable {
     case man, woman, alien, cat, dog
 
     static var `default`: Self {
@@ -37,7 +37,7 @@ enum CharacterOption: String, CaseIterable, Hashable {
     }
 }
 
-enum CharacterAction: String, CaseIterable, Hashable {
+enum CharacterAction: String, CaseIterable, Hashable, Codable {
     case smiling, sitting, eating, drinking, walking, shopping, studying,
         working, relaxing, fighting, crying
 
@@ -46,7 +46,7 @@ enum CharacterAction: String, CaseIterable, Hashable {
     }
 }
 
-enum CharacterLocation: String, CaseIterable, Hashable {
+enum CharacterLocation: String, CaseIterable, Hashable, Codable {
     case park, mall, museum, city, desert, forest, space
 
     static var `default`: Self {
