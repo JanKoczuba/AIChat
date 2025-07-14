@@ -12,7 +12,7 @@ struct ChatView: View {
     @Environment(AvatarManager.self) private var avatarManager
 
     @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
-    @State private var avatar: AvatarModel? 
+    @State private var avatar: AvatarModel?
     @State private var currentUser: UserModel? = .mock
     @State private var textFieldText: String = ""
     @State private var scrollPosition: String?
@@ -55,7 +55,7 @@ struct ChatView: View {
         do {
             let avatar = try await avatarManager.getAvatar(id: avatarId)
             self.avatar = avatar
-            try? avatarManager.addRecentAvatar(avatar: avatar)
+            try? await avatarManager.addRecentAvatar(avatar: avatar)
         } catch {
             print("Error loading avatar: \(error)")
         }
