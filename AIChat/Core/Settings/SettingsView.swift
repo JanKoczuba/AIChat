@@ -12,6 +12,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
+    @Environment(AvatarManager.self) private var avatarManager
     @Environment(AppState.self) private var appState
 
     @State private var isPremium: Bool = false
@@ -150,14 +151,14 @@ struct SettingsView: View {
             do {
                 try authManager.signOut()
                 userManager.signOut()
-                await dissmissScreen()
+                await dismissScreen()
             } catch {
                 showAlert = AnyAppAlert(error: error)
             }
         }
     }
-    private func dissmissScreen() async {
 
+    private func dismissScreen() async {
         dismiss()
         try? await Task.sleep(for: .seconds(1))
         appState.updateViewState(showTabBarView: false)
@@ -183,31 +184,41 @@ struct SettingsView: View {
 
     }
 
-    func onDeleteAccountConfirmed() {
+    private func onDeleteAccountConfirmed() {
         Task {
             do {
-                try await authManager.deleteAccount()
-                try await userManager.deleteCurrentUser()
-                await dissmissScreen()
+                let uid = try authManager.getAuthId()
+                async let deleteAuth: () = authManager.deleteAccount()
+                async let deleteUser: () = userManager.deleteCurrentUser()
+                async let deleteAvatars: () =
+                    avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
+
+                let (_, _, _) = await (
+                    try deleteAuth, try deleteUser, try deleteAvatars
+                )
+
+                await dismissScreen()
             } catch {
                 showAlert = AnyAppAlert(error: error)
             }
         }
     }
+
     func onAccountCreatePressed() {
         showCreateAccountView = true
     }
-
 }
 
 #Preview("no auth") {
     SettingsView()
+        .environment(AvatarManager(remote: MockAvatarService()))
         .environment(AuthManager(service: MockAuthService(user: nil)))
         .environment(UserManager(services: MockUserServices(user: nil)))
         .environment(AppState())
 }
 #Preview("Anonymous") {
     SettingsView()
+        .environment(AvatarManager(remote: MockAvatarService()))
         .environment(
             AuthManager(
                 service: MockAuthService(
@@ -220,6 +231,7 @@ struct SettingsView: View {
 }
 #Preview("Not anonymous") {
     SettingsView()
+        .environment(AvatarManager(remote: MockAvatarService()))
         .environment(
             AuthManager(
                 service: MockAuthService(
