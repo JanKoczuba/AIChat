@@ -8,10 +8,14 @@
 import FirebaseFirestore
 import SwiftfulFirestore
 
-struct FirebaseAvatarService: AvatarService {
+struct FirebaseAvatarService: RemoteAvatarService {
 
     var collection: CollectionReference {
         Firestore.firestore().collection("avatars")
+    }
+
+    func getAvatar(id: String) async throws -> AvatarModel {
+        try await collection.getDocument(id: id)
     }
 
     func createAvatar(avatar: AvatarModel, image: UIImage) async throws {

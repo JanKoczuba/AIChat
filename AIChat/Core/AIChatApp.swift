@@ -48,10 +48,9 @@ struct Dependencies {
     let avatarManager: AvatarManager!
 
     init() {
-        self.authManager = AuthManager(service: FirebaseAuthService())
-        self.userManager = UserManager(services: ProductionUserServices())
-        self.aiManager = AIManager(service: OpenAIService())
-        self.avatarManager = AvatarManager(service: FirebaseAvatarService())
-
+        authManager = AuthManager(service: FirebaseAuthService())
+        userManager = UserManager(services: ProductionUserServices())
+        aiManager = AIManager(service: OpenAIService())
+        avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistance())
     }
 }

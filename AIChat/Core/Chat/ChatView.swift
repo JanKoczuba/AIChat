@@ -9,8 +9,10 @@ import SwiftUI
 
 struct ChatView: View {
 
+    @Environment(AvatarManager.self) private var avatarManager
+
     @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
-    @State private var avatar: AvatarModel? = .mock
+    @State private var avatar: AvatarModel? 
     @State private var currentUser: UserModel? = .mock
     @State private var textFieldText: String = ""
     @State private var scrollPosition: String?
@@ -44,6 +46,19 @@ struct ChatView: View {
                 profileModal(avatar: avatar)
             }
         }
+        .task {
+            await loadAvatar()
+        }
+    }
+
+    private func loadAvatar() async {
+        do {
+            let avatar = try await avatarManager.getAvatar(id: avatarId)
+            self.avatar = avatar
+            try? avatarManager.addRecentAvatar(avatar: avatar)
+        } catch {
+            print("Error loading avatar: \(error)")
+        }
     }
 
     private var scrollViewSection: some View {
@@ -54,7 +69,8 @@ struct ChatView: View {
                     ChatBubbleViewBuilder(
                         message: message,
                         isCurrentUser: isCurrentUser,
-                        imageName: isCurrentUser ? nil : avatar?.profileImageName,
+                        imageName: isCurrentUser
+                            ? nil : avatar?.profileImageName,
                         onImagePressed: onAvatarImagePressed
                     )
                     .id(message.id)
@@ -81,11 +97,15 @@ struct ChatView: View {
                     .font(.system(size: 32))
                     .padding(.trailing, 4)
                     .foregroundStyle(.accent)
-                    .anyButton(.plain, action: {
-                        onSendMessagePressed()
-                    })
+                    .anyButton(
+                        .plain,
+                        action: {
+                            onSendMessagePressed()
+                        }
+                    )
 
-                , alignment: .trailing
+                ,
+                alignment: .trailing
             )
             .background(
                 ZStack {
@@ -168,5 +188,6 @@ struct ChatView: View {
 #Preview {
     NavigationStack {
         ChatView()
+            .environment(AvatarManager(remote: MockAvatarService()))
     }
 }
