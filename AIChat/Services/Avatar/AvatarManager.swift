@@ -11,20 +11,19 @@ import SwiftUI
 @Observable
 class AvatarManager {
 
-    private let local: LocalAvatarPersistance
+    private let local: LocalAvatarPersistence
     private let remote: RemoteAvatarService
 
     init(
         remote: RemoteAvatarService,
-        local: LocalAvatarPersistance = MockLocalAvatarPersistance()
+        local: LocalAvatarPersistence = MockLocalAvatarPersistence()
     ) {
         self.remote = remote
         self.local = local
     }
 
-    func addRecentAvatar(avatar: AvatarModel) async throws {
+    func addRecentAvatar(avatar: AvatarModel) throws {
         try local.addRecentAvatar(avatar: avatar)
-        try await remote.incrementAvatarClickCount(avatarId: avatar.id)
     }
 
     func getRecentAvatars() throws -> [AvatarModel] {
