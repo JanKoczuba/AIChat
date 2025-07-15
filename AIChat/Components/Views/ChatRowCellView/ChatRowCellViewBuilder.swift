@@ -37,7 +37,7 @@ struct ChatRowCellViewBuilder: View {
         if avatar == nil && lastChatMessage == nil {
             return "Error."
         }
-        return lastChatMessage?.content
+        return lastChatMessage?.content?.message
 
     }
 
