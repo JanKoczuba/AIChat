@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ChatMessageModel: Identifiable {
+struct ChatMessageModel: Identifiable, Codable {
     let id: String
     let chatId: String
     let authorId: String?
@@ -21,7 +21,7 @@ struct ChatMessageModel: Identifiable {
         authorId: String? = nil,
         content: AIChatModel? = nil,
         seenByIds: [String]? = nil,
-        dateCreated: Date? = nil,
+        dateCreated: Date? = nil
     ) {
         self.id = id
         self.chatId = chatId
@@ -36,7 +36,46 @@ struct ChatMessageModel: Identifiable {
         return seenByIds.contains(userId)
     }
 
-    static var mock: Self {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case chatId = "chat_id"
+        case authorId = "author_id"
+        case content
+        case seenByIds = "seen_by_ids"
+        case dateCreated = "date_created"
+    }
+
+    static func newUserMessage(
+        chatId: String,
+        userId: String,
+        message: AIChatModel
+    ) -> Self {
+        ChatMessageModel(
+            id: UUID().uuidString,
+            chatId: chatId,
+            authorId: userId,
+            content: message,
+            seenByIds: [userId],
+            dateCreated: .now
+        )
+    }
+
+    static func newAIMessage(
+        chatId: String,
+        avatarId: String,
+        message: AIChatModel
+    ) -> Self {
+        ChatMessageModel(
+            id: UUID().uuidString,
+            chatId: chatId,
+            authorId: avatarId,
+            content: message,
+            seenByIds: [],
+            dateCreated: .now
+        )
+    }
+
+    static var mock: ChatMessageModel {
         mocks[0]
     }
 
@@ -46,7 +85,7 @@ struct ChatMessageModel: Identifiable {
             ChatMessageModel(
                 id: "msg1",
                 chatId: "1",
-                authorId: "user1",
+                authorId: UserAuthInfo.mock().uid,
                 content: AIChatModel(
                     role: .user,
                     content: "Hello, how are you?"
@@ -57,7 +96,7 @@ struct ChatMessageModel: Identifiable {
             ChatMessageModel(
                 id: "msg2",
                 chatId: "2",
-                authorId: "user2",
+                authorId: AvatarModel.mock.avatarId,
                 content: AIChatModel(
                     role: .assistant,
                     content: "I'm doing well, thanks for asking!"
@@ -68,7 +107,7 @@ struct ChatMessageModel: Identifiable {
             ChatMessageModel(
                 id: "msg3",
                 chatId: "3",
-                authorId: "user3",
+                authorId: UserAuthInfo.mock().uid,
                 content: AIChatModel(
                     role: .user,
                     content: "Anyone up for a game tonight?"
@@ -79,7 +118,7 @@ struct ChatMessageModel: Identifiable {
             ChatMessageModel(
                 id: "msg4",
                 chatId: "1",
-                authorId: "user1",
+                authorId: AvatarModel.mock.avatarId,
                 content: AIChatModel(
                     role: .assistant,
                     content: "Sure, count me in!"

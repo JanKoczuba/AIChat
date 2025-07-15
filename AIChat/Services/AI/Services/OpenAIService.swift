@@ -8,11 +8,8 @@
 import OpenAI
 import SwiftUI
 
-typealias ChatContent = ChatQuery.ChatCompletionMessageParam
-    .ChatCompletionUserMessageParam.Content.VisionContent
-typealias ChatText = ChatQuery.ChatCompletionMessageParam
-    .ChatCompletionUserMessageParam.Content.VisionContent
-    .ChatCompletionContentPartTextParam
+typealias ChatContent = ChatQuery.ChatCompletionMessageParam.ChatCompletionUserMessageParam.Content.VisionContent
+typealias ChatText = ChatQuery.ChatCompletionMessageParam.ChatCompletionUserMessageParam.Content.VisionContent.ChatCompletionContentPartTextParam
 
 struct OpenAIService: AIService {
 
@@ -23,21 +20,23 @@ struct OpenAIService: AIService {
     func generateImage(input: String) async throws -> UIImage {
         let query = ImagesQuery(
             prompt: input,
-            model: .gpt4,
+            //            model: .gpt4,
             n: 1,
+            quality: .hd,
             responseFormat: .b64_json,
             size: ._512,
+            style: .natural,
             user: nil
         )
 
         let result = try await openAI.images(query: query)
 
         guard let b64Json = result.data.first?.b64Json,
-            let data = Data(base64Encoded: b64Json),
-            let image = UIImage(data: data)
-        else {
+              let data = Data(base64Encoded: b64Json),
+              let image = UIImage(data: data) else {
             throw OpenAIError.invalidResponse
         }
+
         return image
     }
 
@@ -55,12 +54,13 @@ struct OpenAIService: AIService {
 
         return model
     }
+
     enum OpenAIError: LocalizedError {
         case invalidResponse
     }
 }
 
-struct AIChatModel {
+struct AIChatModel: Codable {
     let role: AIChatRole
     let message: String
 
@@ -82,16 +82,12 @@ struct AIChatModel {
     func toOpenAIModel() -> ChatQuery.ChatCompletionMessageParam? {
         ChatQuery.ChatCompletionMessageParam(
             role: role.openAIRole,
-            content: [
-                ChatContent.chatCompletionContentPartTextParam(
-                    ChatText(text: message)
-                )
-            ]
+            content: [ChatContent.chatCompletionContentPartTextParam(ChatText(text: message))]
         )
     }
 }
 
-enum AIChatRole {
+enum AIChatRole: String, Codable {
     case system, user, assistant, tool
 
     init(role: ChatQuery.ChatCompletionMessageParam.Role) {
@@ -120,3 +116,4 @@ enum AIChatRole {
         }
     }
 }
+

@@ -9,17 +9,18 @@ import FirebaseCore
 import SwiftUI
 
 @main
-struct AIChatApp: App {
+struct AIChatCourseApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
         WindowGroup {
             AppView()
-                .environment(delegate.dependencies.userManager)
-                .environment(delegate.dependencies.authManager)
+                .environment(delegate.dependencies.chatManager)
                 .environment(delegate.dependencies.aiManager)
                 .environment(delegate.dependencies.avatarManager)
+                .environment(delegate.dependencies.userManager)
+                .environment(delegate.dependencies.authManager)
         }
     }
 }
@@ -35,7 +36,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         FirebaseApp.configure()
 
         dependencies = Dependencies()
-
         return true
     }
 }
@@ -45,7 +45,8 @@ struct Dependencies {
     let authManager: AuthManager
     let userManager: UserManager
     let aiManager: AIManager
-    let avatarManager: AvatarManager!
+    let avatarManager: AvatarManager
+    let chatManager: ChatManager
 
     init() {
         authManager = AuthManager(service: FirebaseAuthService())
@@ -55,12 +56,14 @@ struct Dependencies {
             remote: FirebaseAvatarService(),
             local: SwiftDataLocalAvatarPersistence()
         )
+        chatManager = ChatManager(service: FirebaseChatService())
     }
 }
 
 extension View {
     func previewEnvironment(isSignedIn: Bool = true) -> some View {
         self
+            .environment(ChatManager(service: MockChatService()))
             .environment(AIManager(service: MockAIService()))
             .environment(AvatarManager(remote: MockAvatarService()))
             .environment(
