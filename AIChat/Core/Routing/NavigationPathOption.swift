@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 enum NavigationPathOption: Hashable {
-    case chat(avatarId: String)
+    case chat(avatarId: String, chat: ChatModel?)
     case category(category: CharacterOption, imageName: String)
 }
 
@@ -21,8 +21,8 @@ extension View {
         self
             .navigationDestination(for: NavigationPathOption.self) { newValue in
                 switch newValue {
-                case .chat(let avatarId):
-                    ChatView(avatarId: avatarId)
+                case .chat(let avatarId, let chat):
+                    ChatView(chat: chat, avatarId: avatarId)
                 case .category(let category, let imageName):
                     CategoryListView(
                         path: path,

@@ -20,7 +20,6 @@ struct ProfileView: View {
     @State private var isLoading: Bool = true
     @State private var showAlert: AnyAppAlert?
 
-
     @State private var path: [NavigationPathOption] = []
 
     var body: some View {
@@ -149,7 +148,7 @@ struct ProfileView: View {
     }
 
     private func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chat(avatarId: avatar.avatarId))
+        path.append(.chat(avatarId: avatar.avatarId, chat: nil))
     }
 
     private func onDeleteAvatar(indexSet: IndexSet) {

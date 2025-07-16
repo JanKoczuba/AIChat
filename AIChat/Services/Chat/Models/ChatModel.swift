@@ -6,8 +6,9 @@
 //
 
 import Foundation
+import IdentifiableByString
 
-struct ChatModel: Identifiable, Codable {
+struct ChatModel: Identifiable, Codable, Hashable, StringIdentifiable {
     let id: String
     let userId: String
     let avatarId: String
@@ -45,31 +46,43 @@ struct ChatModel: Identifiable, Codable {
         return [
             ChatModel(
                 id: "mock_chat_1",
-                userId: "user1",
-                avatarId: "avatar1",
+                userId: UserAuthInfo.mock().uid,
+                avatarId: AvatarModel.mocks.randomElement()!.avatarId,
                 dateCreated: now,
                 dateModified: now
             ),
             ChatModel(
                 id: "mock_chat_2",
-                userId: "user2",
-                avatarId: "avatar2",
-                dateCreated: now.addingTimeInterval(hours: -1),
-                dateModified: now.addingTimeInterval(minutes: -30)
+                userId: UserAuthInfo.mock().uid,
+                avatarId: AvatarModel.mocks.randomElement()!.avatarId,
+                dateCreated: now.addingTimeInterval(
+                    hours: -1
+                ),
+                dateModified: now.addingTimeInterval(
+                    minutes: -30
+                )
             ),
             ChatModel(
                 id: "mock_chat_3",
-                userId: "user3",
-                avatarId: "avatar3",
-                dateCreated: now.addingTimeInterval(hours: -2),
-                dateModified: now.addingTimeInterval(hours: -1)
+                userId: UserAuthInfo.mock().uid,
+                avatarId: AvatarModel.mocks.randomElement()!.avatarId,
+                dateCreated: now.addingTimeInterval(
+                    hours: -2
+                ),
+                dateModified: now.addingTimeInterval(
+                    hours: -1
+                )
             ),
             ChatModel(
                 id: "mock_chat_4",
-                userId: "user4",
-                avatarId: "avatar4",
-                dateCreated: now.addingTimeInterval(days: -1),
-                dateModified: now.addingTimeInterval(hours: -10)
+                userId: UserAuthInfo.mock().uid,
+                avatarId: AvatarModel.mocks.randomElement()!.avatarId,
+                dateCreated: now.addingTimeInterval(
+                    days: -1
+                ),
+                dateModified: now.addingTimeInterval(
+                    hours: -10
+                )
             ),
         ]
     }

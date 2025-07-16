@@ -7,9 +7,18 @@
 
 @MainActor
 struct MockLocalAvatarPersistence: LocalAvatarPersistence {
-    func addRecentAvatar(avatar: AvatarModel) throws {
+
+    let avatars: [AvatarModel]
+
+    init(avatars: [AvatarModel] = AvatarModel.mocks) {
+        self.avatars = avatars
     }
+
+    func addRecentAvatar(avatar: AvatarModel) throws {
+
+    }
+
     func getRecentAvatars() throws -> [AvatarModel] {
-        AvatarModel.mocks.shuffled()
+        avatars
     }
 }
