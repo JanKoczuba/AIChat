@@ -22,9 +22,13 @@ struct ChatModel: Identifiable, Codable {
         case dateModified = "date_modified"
     }
 
+    static func chatId(userId: String, avatarId: String) -> String {
+        "\(userId)_\(avatarId)"
+    }
+
     static func new(userId: String, avatarId: String) -> Self {
         ChatModel(
-            id: "\(userId)_\(avatarId)",
+            id: chatId(userId: userId, avatarId: avatarId),
             userId: userId,
             avatarId: avatarId,
             dateCreated: .now,
@@ -39,10 +43,34 @@ struct ChatModel: Identifiable, Codable {
     static var mocks: [Self] {
         let now = Date()
         return [
-            ChatModel(id: "mock_chat_1", userId: "user1", avatarId: "avatar1", dateCreated: now, dateModified: now),
-            ChatModel(id: "mock_chat_2", userId: "user2", avatarId: "avatar2", dateCreated: now.addingTimeInterval(hours: -1), dateModified: now.addingTimeInterval(minutes: -30)),
-            ChatModel(id: "mock_chat_3", userId: "user3", avatarId: "avatar3", dateCreated: now.addingTimeInterval(hours: -2), dateModified: now.addingTimeInterval(hours: -1)),
-            ChatModel(id: "mock_chat_4", userId: "user4", avatarId: "avatar4", dateCreated: now.addingTimeInterval(days: -1), dateModified: now.addingTimeInterval(hours: -10))
+            ChatModel(
+                id: "mock_chat_1",
+                userId: "user1",
+                avatarId: "avatar1",
+                dateCreated: now,
+                dateModified: now
+            ),
+            ChatModel(
+                id: "mock_chat_2",
+                userId: "user2",
+                avatarId: "avatar2",
+                dateCreated: now.addingTimeInterval(hours: -1),
+                dateModified: now.addingTimeInterval(minutes: -30)
+            ),
+            ChatModel(
+                id: "mock_chat_3",
+                userId: "user3",
+                avatarId: "avatar3",
+                dateCreated: now.addingTimeInterval(hours: -2),
+                dateModified: now.addingTimeInterval(hours: -1)
+            ),
+            ChatModel(
+                id: "mock_chat_4",
+                userId: "user4",
+                avatarId: "avatar4",
+                dateCreated: now.addingTimeInterval(days: -1),
+                dateModified: now.addingTimeInterval(hours: -10)
+            ),
         ]
     }
 }

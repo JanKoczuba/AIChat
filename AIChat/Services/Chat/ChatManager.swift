@@ -10,10 +10,18 @@ import SwiftfulFirestore
 
 protocol ChatService: Sendable {
     func createNewChat(chat: ChatModel) async throws
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel?
     func addChatMessage(chatId: String, message: ChatMessageModel) async throws
+    func streamChatMessages(chatId: String) -> AsyncThrowingStream<
+        [ChatMessageModel], Error
+    >
 }
 
 struct MockChatService: ChatService {
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
+        ChatModel.mock
+    }
+
     func createNewChat(chat: ChatModel) async throws {
 
     }
@@ -22,12 +30,25 @@ struct MockChatService: ChatService {
     {
 
     }
+    func streamChatMessages(chatId: String) -> AsyncThrowingStream<
+        [ChatMessageModel], Error
+    > {
+        AsyncThrowingStream { continuation in
+
+        }
+    }
 }
 
 struct FirebaseChatService: ChatService {
 
     private var collection: CollectionReference {
         Firestore.firestore().collection("chats")
+    }
+
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
+        try await collection.getDocument(
+            id: ChatModel.chatId(userId: userId, avatarId: avatarId)
+        )
     }
 
     private func messagesCollection(chatId: String) -> CollectionReference {
@@ -51,6 +72,13 @@ struct FirebaseChatService: ChatService {
             ChatModel.CodingKeys.dateModified.rawValue: Date.now
         ])
     }
+
+    func streamChatMessages(chatId: String) -> AsyncThrowingStream<
+        [ChatMessageModel], any Error
+    > {
+        messagesCollection(chatId: chatId).streamAllDocuments()
+    }
+
 }
 
 @MainActor
@@ -63,6 +91,10 @@ class ChatManager {
         self.service = service
     }
 
+    func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
+        try await service.getChat(userId: userId, avatarId: avatarId)
+    }
+
     func createNewChat(chat: ChatModel) async throws {
         try await service.createNewChat(chat: chat)
     }
@@ -70,5 +102,13 @@ class ChatManager {
     func addChatMessage(chatId: String, message: ChatMessageModel) async throws
     {
         try await service.addChatMessage(chatId: chatId, message: message)
+    }
+
+    func streamChatMessages(
+        chatId: String,
+    ) -> AsyncThrowingStream<[ChatMessageModel], Error> {
+        service.streamChatMessages(
+            chatId: chatId,
+        )
     }
 }
