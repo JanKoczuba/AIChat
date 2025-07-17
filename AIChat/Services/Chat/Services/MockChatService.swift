@@ -36,6 +36,13 @@ class MockChatService: ChatService {
     func createNewChat(chat: ChatModel) async throws {
 
     }
+    func markChatMessageAsSeen(
+        chatId: String,
+        messageId: String,
+        userId: String
+    ) async throws {
+
+    }
 
     func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
         try await Task.sleep(for: .seconds(delay))

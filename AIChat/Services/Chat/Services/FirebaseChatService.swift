@@ -27,12 +27,6 @@ struct FirebaseChatService: ChatService {
     }
 
     func getChat(userId: String, avatarId: String) async throws -> ChatModel? {
-        //        let result: [ChatModel] = try await collection
-        //            .whereField(ChatModel.CodingKeys.userId.rawValue, isEqualTo: userId)
-        //            .whereField(ChatModel.CodingKeys.avatarId.rawValue, isEqualTo: avatarId)
-        //            .getAllDocuments()
-        //
-        //        return result.first
         try await collection.getDocument(
             id: ChatModel.chatId(userId: userId, avatarId: avatarId)
         )
@@ -44,15 +38,25 @@ struct FirebaseChatService: ChatService {
             .getAllDocuments()
     }
 
+    func markChatMessageAsSeen(
+        chatId: String,
+        messageId: String,
+        userId: String
+    ) async throws {
+        try await messagesCollection(chatId: chatId).document(messageId)
+            .updateData([
+                ChatMessageModel.CodingKeys.seenByIds.rawValue:
+                    FieldValue.arrayUnion([userId])
+            ])
+    }
+
     func addChatMessage(chatId: String, message: ChatMessageModel) async throws
     {
-        // Add the message to chat sub-collection
         try messagesCollection(chatId: chatId).document(message.id).setData(
             from: message,
             merge: true
         )
 
-        // Update chat dateModified
         try await collection.document(chatId).updateData([
             ChatModel.CodingKeys.dateModified.rawValue: Date.now
         ])

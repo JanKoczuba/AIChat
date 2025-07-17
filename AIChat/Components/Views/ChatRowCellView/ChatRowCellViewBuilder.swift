@@ -30,7 +30,7 @@ struct ChatRowCellViewBuilder: View {
 
     private var hasNewChat: Bool {
         guard let lastChatMessage, let currentUserId else { return false }
-        return lastChatMessage.hasBeenSeenBy(userId: currentUserId)
+        return !lastChatMessage.hasBeenSeenBy(userId: currentUserId)
     }
 
     private var subheadline: String? {
@@ -67,24 +67,36 @@ struct ChatRowCellViewBuilder: View {
 
 #Preview {
     VStack {
-        ChatRowCellViewBuilder(chat: .mock, getAvatar: {
-            try? await Task.sleep(for: .seconds(5))
-            return .mock
-        }, getLastChatMessage: {
-            try? await Task.sleep(for: .seconds(5))
-            return .mock
-        })
+        ChatRowCellViewBuilder(
+            chat: .mock,
+            getAvatar: {
+                try? await Task.sleep(for: .seconds(5))
+                return .mock
+            },
+            getLastChatMessage: {
+                try? await Task.sleep(for: .seconds(5))
+                return .mock
+            }
+        )
 
-        ChatRowCellViewBuilder(chat: .mock, getAvatar: {
-            .mock
-        }, getLastChatMessage: {
-            .mock
-        })
+        ChatRowCellViewBuilder(
+            chat: .mock,
+            getAvatar: {
+                .mock
+            },
+            getLastChatMessage: {
+                .mock
+            }
+        )
 
-        ChatRowCellViewBuilder(chat: .mock, getAvatar: {
-            nil
-        }, getLastChatMessage: {
-            nil
-        })
+        ChatRowCellViewBuilder(
+            chat: .mock,
+            getAvatar: {
+                nil
+            },
+            getLastChatMessage: {
+                nil
+            }
+        )
     }
 }
