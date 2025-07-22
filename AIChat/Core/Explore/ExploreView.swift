@@ -11,12 +11,23 @@ struct ExploreView: View {
 
     @Environment(AvatarManager.self) private var avatarManager
 
-    @State private var featuredAvatars: [AvatarModel] = []
     @State private var categories: [CharacterOption] = CharacterOption.allCases
+
+    @State private var featuredAvatars: [AvatarModel] = []
     @State private var popularAvatars: [AvatarModel] = []
-    @State private var path: [NavigationPathOption] = []
     @State private var isLoadingFeatured: Bool = true
     @State private var isLoadingPopular: Bool = true
+
+    @State private var path: [NavigationPathOption] = []
+    @State private var showDevSettings: Bool = false
+
+    private var showDevSettingsButton: Bool {
+#if DEV || MOCK
+        return true
+#else
+        return false
+#endif
+    }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -42,6 +53,16 @@ struct ExploreView: View {
                 }
             }
             .navigationTitle("Explore")
+            .toolbar(content: {
+                ToolbarItem(placement: .topBarLeading) {
+                    if showDevSettingsButton {
+                        devSettingsButton
+                    }
+                }
+            })
+            .sheet(isPresented: $showDevSettings, content: {
+                DevSettingsView()
+            })
             .navigationDestinationForCoreModule(path: $path)
             .task {
                 await loadFeaturedAvatars()
@@ -50,6 +71,18 @@ struct ExploreView: View {
                 await loadPopularAvatars()
             }
         }
+    }
+
+    private var devSettingsButton: some View {
+        Text("DEV 🤫")
+            .badgeButton()
+            .anyButton(.press) {
+                onDevSettingsPressed()
+            }
+    }
+
+    private func onDevSettingsPressed() {
+        showDevSettings = true
     }
 
     private var loadingIndicator: some View {
@@ -89,6 +122,7 @@ struct ExploreView: View {
     }
 
     private func loadFeaturedAvatars() async {
+        // If already loaded, no need to fetch again
         guard featuredAvatars.isEmpty else { return }
 
         do {
@@ -108,6 +142,7 @@ struct ExploreView: View {
         } catch {
             print("Error loading featured avatars: \(error)")
         }
+
         isLoadingPopular = false
     }
 
@@ -137,19 +172,14 @@ struct ExploreView: View {
                 ScrollView(.horizontal) {
                     HStack(spacing: 12) {
                         ForEach(categories, id: \.self) { category in
-                            let imageName = popularAvatars.last(where: {
-                                $0.characterOption == category
-                            })?.profileImageName
+                            let imageName = popularAvatars.last(where: { $0.characterOption == category })?.profileImageName
                             if let imageName {
                                 CategoryCellView(
                                     title: category.plural.capitalized,
                                     imageName: imageName
                                 )
                                 .anyButton {
-                                    onCategoryPressed(
-                                        category: category,
-                                        imageName: imageName
-                                    )
+                                    onCategoryPressed(category: category, imageName: imageName)
                                 }
                             }
                         }
@@ -188,8 +218,7 @@ struct ExploreView: View {
         path.append(.chat(avatarId: avatar.avatarId, chat: nil))
     }
 
-    private func onCategoryPressed(category: CharacterOption, imageName: String)
-    {
+    private func onCategoryPressed(category: CharacterOption, imageName: String) {
         path.append(.category(category: category, imageName: imageName))
     }
 }
@@ -200,9 +229,7 @@ struct ExploreView: View {
 }
 #Preview("No data") {
     ExploreView()
-        .environment(
-            AvatarManager(remote: MockAvatarService(avatars: [], delay: 2.0))
-        )
+        .environment(AvatarManager(remote: MockAvatarService(avatars: [], delay: 2.0)))
 }
 #Preview("Slow loading") {
     ExploreView()

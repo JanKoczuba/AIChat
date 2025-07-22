@@ -34,7 +34,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             .LaunchOptionsKey: Any]? = nil
     ) -> Bool {
 
-
         let config: BuildConfiguration
 
         #if MOCK
