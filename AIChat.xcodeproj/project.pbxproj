@@ -12,7 +12,6 @@
 		0C77C4D02DD9E43E005B4378 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0C77C4CF2DD9E43E005B4378 /* SDWebImageSwiftUI */; };
 		0C889F412E240047005D8977 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = 0C889F402E240047005D8977 /* OpenAI */; };
 		0CC9BDCD2E215B7A00D5BEE4 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 0CC9BDCC2E215B7A00D5BEE4 /* FirebaseAuth */; };
-		0CC9BDCF2E215B9000D5BEE4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0CC9BDCE2E215B9000D5BEE4 /* GoogleService-Info.plist */; };
 		0CC9BEF92E22787900D5BEE4 /* SignInAppleAsync in Frameworks */ = {isa = PBXBuildFile; productRef = 0CC9BEF82E22787900D5BEE4 /* SignInAppleAsync */; };
 		0CC9BFA22E22A9EF00D5BEE4 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0CC9BFA12E22A9EF00D5BEE4 /* FirebaseFirestore */; };
 		0CC9BFA52E22EC4700D5BEE4 /* SwiftfulFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0CC9BFA42E22EC4700D5BEE4 /* SwiftfulFirestore */; };
@@ -36,7 +35,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0CC9BDCE2E215B9000D5BEE4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		0CE1D8EC2DD50D16008FBF61 /* AIChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0CE1D8FA2DD50D17008FBF61 /* AIChatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIChatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0CE1D9042DD50D17008FBF61 /* AIChatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIChatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -103,7 +101,6 @@
 		0CE1D8E32DD50D16008FBF61 = {
 			isa = PBXGroup;
 			children = (
-				0CC9BDCE2E215B9000D5BEE4 /* GoogleService-Info.plist */,
 				0CE1D8EE2DD50D16008FBF61 /* AIChat */,
 				0CE1D8FD2DD50D17008FBF61 /* AIChatTests */,
 				0CE1D9072DD50D17008FBF61 /* AIChatUITests */,
@@ -259,7 +256,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0CC9BDCF2E215B9000D5BEE4 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
