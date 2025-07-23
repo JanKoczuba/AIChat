@@ -94,7 +94,7 @@ struct Dependencies {
             aiManager = AIManager(service: MockAIService())
             avatarManager = AvatarManager(remote: MockAvatarService())
             chatManager = ChatManager(service: MockChatService())
-            logManager = LogManager(services: [ConsoleService()])
+            logManager = LogManager(services: [ConsoleService(printParameters: false)])
         case .dev:
             authManager = AuthManager(service: FirebaseAuthService())
             userManager = UserManager(services: ProductionUserServices())
