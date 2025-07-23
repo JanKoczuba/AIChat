@@ -53,7 +53,7 @@ extension View {
                 colors: [
                     Color.black.opacity(0),
                     Color.black.opacity(0.3),
-                    Color.black.opacity(0.4),
+                    Color.black.opacity(0.4)
                 ],
                 startPoint: .top,
                 endPoint: .bottom

@@ -11,7 +11,7 @@ struct OnboardingColorView: View {
 
     @State private var selectedColor: Color?
     let profileColors: [Color] = [
-        .red, .green, .orange, .blue, .mint, .purple, .cyan, .teal, .indigo,
+        .red, .green, .orange, .blue, .mint, .purple, .cyan, .teal, .indigo
     ]
 
     var body: some View {

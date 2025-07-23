@@ -38,9 +38,7 @@ extension View {
     func anyButton(
         _ option: ButtonStyleOption = .plain,
         action: @escaping () -> Void
-    )
-        -> some View
-    {
+    ) -> some View {
         switch option {
         case .press:
             self.pressableButton(action: action)

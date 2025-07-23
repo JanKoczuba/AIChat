@@ -50,8 +50,7 @@ extension View {
 
     @ViewBuilder
     func showCustomAlert(type: AlertType = .alert, alert: Binding<AnyAppAlert?>)
-        -> some View
-    {
+        -> some View {
         switch type {
         case .alert:
             self
