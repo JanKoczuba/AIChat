@@ -50,11 +50,19 @@ struct ChatMessageModel: Identifiable, Codable, StringIdentifiable {
         case dateCreated = "date_created"
     }
 
-    static func newUserMessage(
-        chatId: String,
-        userId: String,
-        message: AIChatModel
-    ) -> Self {
+    var eventParameters: [String: Any] {
+        var dict: [String: Any?] = [
+            "message_\(CodingKeys.id.rawValue)": id,
+            "message_\(CodingKeys.chatId.rawValue)": chatId,
+            "message_\(CodingKeys.authorId.rawValue)": authorId,
+            "message_\(CodingKeys.seenByIds.rawValue)": seenByIds?.sorted().joined(separator: ", "),
+            "message_\(CodingKeys.dateCreated.rawValue)": dateCreated,
+        ]
+        dict.merge(content?.eventParameters)
+        return dict.compactMapValues({ $0 })
+    }
+
+    static func newUserMessage(chatId: String, userId: String, message: AIChatModel) -> Self {
         ChatMessageModel(
             id: UUID().uuidString,
             chatId: chatId,
@@ -65,11 +73,7 @@ struct ChatMessageModel: Identifiable, Codable, StringIdentifiable {
         )
     }
 
-    static func newAIMessage(
-        chatId: String,
-        avatarId: String,
-        message: AIChatModel
-    ) -> Self {
+    static func newAIMessage(chatId: String, avatarId: String, message: AIChatModel) -> Self {
         ChatMessageModel(
             id: UUID().uuidString,
             chatId: chatId,
@@ -91,10 +95,7 @@ struct ChatMessageModel: Identifiable, Codable, StringIdentifiable {
                 id: "msg1",
                 chatId: "1",
                 authorId: UserAuthInfo.mock().uid,
-                content: AIChatModel(
-                    role: .user,
-                    content: "Hello, how are you?"
-                ),
+                content: AIChatModel(role: .user, content: "Hello, how are you?"),
                 seenByIds: ["user2", "user3"],
                 dateCreated: now
             ),
@@ -102,10 +103,7 @@ struct ChatMessageModel: Identifiable, Codable, StringIdentifiable {
                 id: "msg2",
                 chatId: "2",
                 authorId: AvatarModel.mock.avatarId,
-                content: AIChatModel(
-                    role: .assistant,
-                    content: "I'm doing well, thanks for asking!"
-                ),
+                content: AIChatModel(role: .assistant, content: "I'm doing well, thanks for asking!"),
                 seenByIds: ["user1"],
                 dateCreated: now.addingTimeInterval(minutes: -5)
             ),
@@ -113,10 +111,7 @@ struct ChatMessageModel: Identifiable, Codable, StringIdentifiable {
                 id: "msg3",
                 chatId: "3",
                 authorId: UserAuthInfo.mock().uid,
-                content: AIChatModel(
-                    role: .user,
-                    content: "Anyone up for a game tonight?"
-                ),
+                content: AIChatModel(role: .user, content: "Anyone up for a game tonight?"),
                 seenByIds: ["user1", "user2", "user4"],
                 dateCreated: now.addingTimeInterval(hours: -1)
             ),
@@ -124,13 +119,10 @@ struct ChatMessageModel: Identifiable, Codable, StringIdentifiable {
                 id: "msg4",
                 chatId: "1",
                 authorId: AvatarModel.mock.avatarId,
-                content: AIChatModel(
-                    role: .assistant,
-                    content: "Sure, count me in!"
-                ),
+                content: AIChatModel(role: .assistant, content: "Sure, count me in!"),
                 seenByIds: nil,
                 dateCreated: now.addingTimeInterval(hours: -2, minutes: -15)
-            ),
+            )
         ]
     }
 }
