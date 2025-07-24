@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct UserAuthInfo: Sendable, Codable  {
+struct UserAuthInfo: Sendable, Codable {
     let uid: String
     let email: String?
     let isAnonymous: Bool
@@ -52,7 +52,7 @@ struct UserAuthInfo: Sendable, Codable  {
             "uauth_\(CodingKeys.email.rawValue)": email,
             "uauth_\(CodingKeys.isAnonymous.rawValue)": isAnonymous,
             "uauth_\(CodingKeys.creationDate.rawValue)": creationDate,
-            "uauth_\(CodingKeys.lastSignInDate.rawValue)": lastSignInDate,
+            "uauth_\(CodingKeys.lastSignInDate.rawValue)": lastSignInDate
         ]
         return dict.compactMapValues({ $0 })
     }

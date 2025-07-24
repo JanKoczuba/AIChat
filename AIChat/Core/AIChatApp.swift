@@ -45,27 +45,23 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         config = .prod
         #endif
 
-
-        config.configure();
+        config.configure()
         dependencies = Dependencies(config: config)
-
         return true
     }
 }
 
-
 enum BuildConfiguration {
     case mock(isSignedIn: Bool), dev, prod
 
-    func configure(){
+    func configure() {
         switch self {
-        case .mock(let isSignedIn):
-            break;
+        case .mock:
+            break
         case .dev:
             let plist = Bundle.main.path(forResource: "GoogleServiceInfo-Dev", ofType: "plist")!
             let options = FirebaseOptions(contentsOfFile: plist)!
             FirebaseApp.configure(options: options)
-            break;
         case .prod:
             let plist = Bundle.main.path(forResource: "GoogleServiceInfo-Prod", ofType: "plist")!
             let options = FirebaseOptions(contentsOfFile: plist)!

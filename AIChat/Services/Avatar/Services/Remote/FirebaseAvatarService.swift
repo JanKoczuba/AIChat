@@ -55,8 +55,7 @@ struct FirebaseAvatarService: RemoteAvatarService {
     }
 
     func getAvatarsForCategory(category: CharacterOption) async throws
-        -> [AvatarModel]
-    {
+        -> [AvatarModel] {
         try await collection
             .whereField(
                 AvatarModel.CodingKeys.characterOption.rawValue,

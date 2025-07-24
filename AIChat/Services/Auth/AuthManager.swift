@@ -26,8 +26,7 @@ class AuthManager {
             for await value in service.addAuthenticatedUserListaner(
                 onListenerAttached: { listener in
                     self.listener = listener
-                })
-            {
+                }) {
                 self.auth = value
                 print("Auth listener success: \(value?.uid ?? "no uid")")
             }

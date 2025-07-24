@@ -13,10 +13,12 @@ struct SettingsView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
     @Environment(AvatarManager.self) private var avatarManager
+    @Environment(ChatManager.self) private var chatManager
     @Environment(AppState.self) private var appState
+    @Environment(LogManager.self) private var logManager
 
     @State private var isPremium: Bool = false
-    @State private var isAnonymousUser: Bool = true
+    @State private var isAnonymousUser: Bool = false
     @State private var showCreateAccountView: Bool = false
     @State private var showAlert: AnyAppAlert?
 
@@ -28,21 +30,17 @@ struct SettingsView: View {
                 applicationSection
             }
             .navigationTitle("Settings")
-            .sheet(
-                isPresented: $showCreateAccountView,
-                onDismiss: {
-                    setAnonymousAccountStatus()
-
-                },
-                content: {
-                    CreateAccountView()
-                        .presentationDetents([.medium])
-                }
-            )
+            .sheet(isPresented: $showCreateAccountView, onDismiss: {
+                setAnonymousAccountStatus()
+            }, content: {
+                CreateAccountView()
+                    .presentationDetents([.medium])
+            })
             .onAppear {
                 setAnonymousAccountStatus()
             }
             .showCustomAlert(alert: $showAlert)
+            .screenAppearAnalytics(name: "SettingsView")
         }
     }
 
@@ -52,10 +50,9 @@ struct SettingsView: View {
                 Text("Save & back-up account")
                     .rowFormatting()
                     .anyButton(.highlight) {
-                        onAccountCreatePressed()
+                        onCreateAccountPressed()
                     }
                     .removeListRowFormatting()
-
             } else {
                 Text("Sign out")
                     .rowFormatting()
@@ -63,7 +60,6 @@ struct SettingsView: View {
                         onSignOutPressed()
                     }
                     .removeListRowFormatting()
-
             }
 
             Text("Delete account")
@@ -76,29 +72,24 @@ struct SettingsView: View {
         } header: {
             Text("Account")
         }
-
     }
 
     private var purchaseSection: some View {
         Section {
             HStack(spacing: 8) {
-                Text(
-                    "Account status:  \(isPremium ? "Premium" : "FREE")"
-                )
+                Text("Account status: \(isPremium ? "PREMIUM" : "FREE")")
                 Spacer(minLength: 0)
-
                 if isPremium {
                     Text("MANAGE")
                         .badgeButton()
                 }
-
             }
             .rowFormatting()
             .anyButton(.highlight) {
+
             }
             .disabled(!isPremium)
             .removeListRowFormatting()
-
         } header: {
             Text("Purchases")
         }
@@ -111,49 +102,93 @@ struct SettingsView: View {
                 Spacer(minLength: 0)
                 Text(Utilities.appVersion ?? "")
                     .foregroundStyle(.secondary)
-
             }
             .rowFormatting()
             .removeListRowFormatting()
+
             HStack(spacing: 8) {
                 Text("Build Number")
                 Spacer(minLength: 0)
                 Text(Utilities.buildNumber ?? "")
                     .foregroundStyle(.secondary)
-
             }
             .rowFormatting()
             .removeListRowFormatting()
 
-            Text("Contact Us")
+            Text("Contact us")
                 .foregroundStyle(.blue)
                 .rowFormatting()
-                .anyButton(
-                    .highlight,
-                    action: {
-                        //
-                    }
-                )
-                .removeListRowFormatting()
+                .anyButton(.highlight, action: {
 
+                })
+                .removeListRowFormatting()
         } header: {
             Text("Application")
+        } footer: {
+            Text("Created by Swiftful Thinking.\nLearn more at www.swiftful-thinking.com.")
+                .baselineOffset(6)
         }
     }
 
     func setAnonymousAccountStatus() {
-        isAnonymousUser =
-            authManager.auth?.isAnonymous == true
+        isAnonymousUser = authManager.auth?.isAnonymous == true
+    }
+
+    enum Event: LoggableEvent {
+        case signOutStart
+        case signOutSuccess
+        case signOutFail(error: Error)
+        case deleteAccountStart
+        case deleteAccountStartConfirm
+        case deleteAccountSuccess
+        case deleteAccountFail(error: Error)
+        case createAccountPressed
+
+        var eventName: String {
+            switch self {
+            case .signOutStart:                 return "SettingsView_SignOut_Start"
+            case .signOutSuccess:               return "SettingsView_SignOut_Success"
+            case .signOutFail:                  return "SettingsView_SignOut_Fail"
+            case .deleteAccountStart:           return "SettingsView_DeleteAccount_Start"
+            case .deleteAccountStartConfirm:    return "SettingsView_DeleteAccount_StartConfirm"
+            case .deleteAccountSuccess:         return "SettingsView_DeleteAccount_Success"
+            case .deleteAccountFail:            return "SettingsView_DeleteAccount_Fail"
+            case .createAccountPressed:         return "SettingsView_CreateAccount_Pressed"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .signOutFail(error: let error), .deleteAccountFail(error: let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .signOutFail, .deleteAccountFail:
+                return .severe
+            default:
+                return .analytic
+            }
+        }
     }
 
     func onSignOutPressed() {
+        logManager.trackEvent(event: Event.signOutStart)
+
         Task {
             do {
                 try authManager.signOut()
                 userManager.signOut()
+                logManager.trackEvent(event: Event.signOutSuccess)
+
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlert(error: error)
+                logManager.trackEvent(event: Event.signOutFail(error: error))
             }
         }
     }
@@ -165,91 +200,75 @@ struct SettingsView: View {
     }
 
     func onDeleteAccountPressed() {
+        logManager.trackEvent(event: Event.deleteAccountStart)
+
         showAlert = AnyAppAlert(
             title: "Delete Account?",
-            subtitle: "This action is permanent and cannon be undone.",
+            subtitle: "This action is permanent and cannot be undone. Your data will be deleted from our server forever.",
             buttons: {
                 AnyView(
-                    Button(
-                        "Delete",
-                        role: .destructive,
-                        action: {
-                            onDeleteAccountConfirmed()
-                        }
-                    )
+                    Button("Delete", role: .destructive, action: {
+                        onDeleteAccountConfirmed()
+                    })
                 )
-
             }
         )
-
     }
 
     private func onDeleteAccountConfirmed() {
+        logManager.trackEvent(event: Event.deleteAccountStartConfirm)
+
         Task {
             do {
                 let uid = try authManager.getAuthId()
                 async let deleteAuth: () = authManager.deleteAccount()
                 async let deleteUser: () = userManager.deleteCurrentUser()
-                async let deleteAvatars: () =
-                    avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
+                async let deleteAvatars: () = avatarManager.removeAuthorIdFromAllUserAvatars(userId: uid)
+                async let deleteChats: () = chatManager.deleteAllChatsForUser(userId: uid)
 
-                let (_, _, _) = await (
-                    try deleteAuth, try deleteUser, try deleteAvatars
-                )
+                let (_, _, _, _) = await (try deleteAuth, try deleteUser, try deleteAvatars, try deleteChats)
+                logManager.deleteUserProfile()
+                logManager.trackEvent(event: Event.deleteAccountSuccess)
 
                 await dismissScreen()
             } catch {
                 showAlert = AnyAppAlert(error: error)
+                logManager.trackEvent(event: Event.deleteAccountFail(error: error))
             }
         }
     }
 
-    func onAccountCreatePressed() {
+    func onCreateAccountPressed() {
         showCreateAccountView = true
+        logManager.trackEvent(event: Event.createAccountPressed)
     }
 }
 
-#Preview("no auth") {
-    SettingsView()
-        .environment(AvatarManager(remote: MockAvatarService()))
-        .environment(AuthManager(service: MockAuthService(user: nil)))
-        .environment(UserManager(services: MockUserServices(user: nil)))
-        .environment(AppState())
-}
-#Preview("Anonymous") {
-    SettingsView()
-        .environment(AvatarManager(remote: MockAvatarService()))
-        .environment(
-            AuthManager(
-                service: MockAuthService(
-                    user: UserAuthInfo.mock(isAnonymous: true)
-                )
-            )
-        )
-        .environment(UserManager(services: MockUserServices(user: .mock)))
-        .environment(AppState())
-}
-#Preview("Not anonymous") {
-    SettingsView()
-        .environment(AvatarManager(remote: MockAvatarService()))
-        .environment(
-            AuthManager(
-                service: MockAuthService(
-                    user: UserAuthInfo.mock(isAnonymous: false)
-                )
-            )
-        )
-        .environment(UserManager(services: MockUserServices(user: .mock)))
-        .environment(AppState())
-}
-
-extension View {
-
-    fileprivate func rowFormatting() -> some View {
+fileprivate extension View {
+    func rowFormatting() -> some View {
         self
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .background(Color(uiColor: .systemBackground))
     }
+}
+
+#Preview("No auth") {
+    SettingsView()
+        .environment(AuthManager(service: MockAuthService(user: nil)))
+        .environment(UserManager(services: MockUserServices(user: nil)))
+        .previewEnvironment()
+}
+#Preview("Anonymous") {
+    SettingsView()
+        .environment(AuthManager(service: MockAuthService(user: UserAuthInfo.mock(isAnonymous: true))))
+        .environment(UserManager(services: MockUserServices(user: .mock)))
+        .previewEnvironment()
+}
+#Preview("Not anonymous") {
+    SettingsView()
+        .environment(AuthManager(service: MockAuthService(user: UserAuthInfo.mock(isAnonymous: false))))
+        .environment(UserManager(services: MockUserServices(user: .mock)))
+        .previewEnvironment()
 }

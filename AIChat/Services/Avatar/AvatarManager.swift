@@ -48,8 +48,7 @@ class AvatarManager {
     }
 
     func getAvatarsForCategory(category: CharacterOption) async throws
-        -> [AvatarModel]
-    {
+        -> [AvatarModel] {
         try await remote.getAvatarsForCategory(category: category)
     }
 

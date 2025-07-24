@@ -55,8 +55,7 @@ struct MockAvatarService: RemoteAvatarService {
     }
 
     func getAvatarsForCategory(category: CharacterOption) async throws
-        -> [AvatarModel]
-    {
+        -> [AvatarModel] {
         try await Task.sleep(for: .seconds(delay))
         try tryShowError()
         return avatars.shuffled()

@@ -10,6 +10,8 @@ import SwiftUI
 struct WelcomeView: View {
 
     @Environment(AppState.self) private var root
+    @Environment(LogManager.self) private var logManager
+
     @State var imageName: String = Constants.randomImage
     @State private var showSignInView: Bool = false
 
@@ -21,13 +23,14 @@ struct WelcomeView: View {
 
                 titleSection
                     .padding(.top, 24)
+
                 ctaButtons
                     .padding(16)
 
                 policyLinks
-
             }
         }
+        .screenAppearAnalytics(name: "WelcomeView")
         .sheet(isPresented: $showSignInView) {
             CreateAccountView(
                 title: "Sign in",
@@ -41,10 +44,15 @@ struct WelcomeView: View {
     }
 
     private var titleSection: some View {
-        Text("AI Chat")
-            .font(.largeTitle)
-            .fontWeight(.semibold)
+        VStack(spacing: 8) {
+            Text("AI Chat 🤙")
+                .font(.largeTitle)
+                .fontWeight(.semibold)
 
+            Text("YouTube @ SwiftfulThinking")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     private var ctaButtons: some View {
@@ -55,27 +63,62 @@ struct WelcomeView: View {
                 Text("Get Started")
                     .callToActionButton()
             }
-            Text("Already have an account? Sign In.")
+
+            Text("Already have an account? Sign in!")
                 .underline()
                 .font(.body)
                 .padding(8)
                 .tappableBackground()
                 .onTapGesture {
-                    onSignInPressed()
+                    onSignInPresssed()
                 }
         }
     }
 
-    private func handleDidSignIn(isNewUser: Bool) {
-        if isNewUser {
+    enum Event: LoggableEvent {
+        case didSignIn(isNewUser: Bool)
+        case signInPressed
 
+        var eventName: String {
+            switch self {
+            case .didSignIn:          return "WelcomeView_DidSignIn"
+            case .signInPressed:      return "WelcomeView_SignIn_Pressed"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .didSignIn(isNewUser: let isNewUser):
+                return [
+                    "is_new_user": isNewUser
+                ]
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            default:
+                return .analytic
+            }
+        }
+    }
+
+    private func handleDidSignIn(isNewUser: Bool) {
+        logManager.trackEvent(event: Event.didSignIn(isNewUser: isNewUser))
+
+        if isNewUser {
+            // Do nothing, user goes through onboarding
         } else {
+            // Push into tabbar view
             root.updateViewState(showTabBarView: true)
         }
     }
 
-    private func onSignInPressed() {
+    private func onSignInPresssed() {
         showSignInView = true
+        logManager.trackEvent(event: Event.signInPressed)
     }
 
     private var policyLinks: some View {

@@ -54,7 +54,7 @@ class UserManager {
         }
     }
 
-    func markOnboardingCompletedForCurrentUser(profileColorHex: String)
+    func markOnboardingCompleteForCurrentUser(profileColorHex: String)
         async throws {
         let uid = try currentUserId()
         try await remote.markOnboardingCompleted(
