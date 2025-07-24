@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0C0A2A492DE9D4E100B0A37E /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 0C0A2A482DE9D4E100B0A37E /* SwiftfulUtilities */; };
 		0C0DF8362E250B58002E1C05 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 0C0DF8352E250B58002E1C05 /* FirebaseStorage */; };
+		0C56E7FD2E328F7100D46D9B /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0C56E7FC2E328F7100D46D9B /* FirebaseCrashlytics */; };
 		0C77C4D02DD9E43E005B4378 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0C77C4CF2DD9E43E005B4378 /* SDWebImageSwiftUI */; };
 		0C889F412E240047005D8977 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = 0C889F402E240047005D8977 /* OpenAI */; };
 		0C9C208F2E313906000C6B86 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0C9C208E2E313906000C6B86 /* FirebaseAnalytics */; };
@@ -83,6 +84,7 @@
 				0CC9BFA52E22EC4700D5BEE4 /* SwiftfulFirestore in Frameworks */,
 				0CC9BDCD2E215B7A00D5BEE4 /* FirebaseAuth in Frameworks */,
 				0C889F412E240047005D8977 /* OpenAI in Frameworks */,
+				0C56E7FD2E328F7100D46D9B /* FirebaseCrashlytics in Frameworks */,
 				0C0DF8362E250B58002E1C05 /* FirebaseStorage in Frameworks */,
 				0C9C21982E314841000C6B86 /* Mixpanel in Frameworks */,
 				0CC9BFA22E22A9EF00D5BEE4 /* FirebaseFirestore in Frameworks */,
@@ -147,6 +149,7 @@
 				0CE1D8E92DD50D16008FBF61 /* Frameworks */,
 				0CE1D8EA2DD50D16008FBF61 /* Resources */,
 				0C77C4AA2DD7AEBE005B4378 /* swiftlint */,
+				0C56E7FE2E32906500D46D9B /* Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -167,6 +170,7 @@
 				0C0DF8352E250B58002E1C05 /* FirebaseStorage */,
 				0C9C208E2E313906000C6B86 /* FirebaseAnalytics */,
 				0C9C21972E314841000C6B86 /* Mixpanel */,
+				0C56E7FC2E328F7100D46D9B /* FirebaseCrashlytics */,
 			);
 			productName = AIChat;
 			productReference = 0CE1D8EC2DD50D16008FBF61 /* AIChat.app */;
@@ -296,6 +300,30 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		0C56E7FE2E32906500D46D9B /* Crashlytics */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+			);
+			name = Crashlytics;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ \"${CONFIGURATION}\" == \"Debug\" ]; then\n  GOOGLE_SERVICE_INFO_PLIST=\"${PROJECT_DIR}/AIChat/GoogleServicePLists/GoogleService-Info-Dev.plist\"\nelif [ \"${CONFIGURATION}\" == \"Mock\" ]; then\n  echo \"Skipping Crashlytics upload for Mock configuration.\"\n  exit 0  # Use `exit 0` if `return` does not work in your environment\nelif [ \"${CONFIGURATION}\" == \"Release\" ]; then\n  GOOGLE_SERVICE_INFO_PLIST=\"${PROJECT_DIR}/AIChat/GoogleServicePLists/GoogleService-Info-Prod.plist\"\nelse\n  echo \"No matching build configuration found for GoogleService-Info.plist!\"\n  exit 1\nfi\n\n# Run the Crashlytics script with the selected plist file\n\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\" -gsp \"${GOOGLE_SERVICE_INFO_PLIST}\"\n";
+		};
 		0C77C4AA2DD7AEBE005B4378 /* swiftlint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -482,6 +510,7 @@
 				CODE_SIGN_ENTITLEMENTS = AIChat/AIChat.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = SX7T6CVU8C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -505,6 +534,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.koczuba.AIChat.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -532,7 +562,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIChat/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "AiChat - Dev";
+				INFOPLIST_KEY_CFBundleDisplayName = AiChat;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -549,6 +579,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.koczuba.AIChat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -723,13 +754,14 @@
 				CODE_SIGN_ENTITLEMENTS = AIChat/AIChat.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = SX7T6CVU8C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIChat/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "AiChat - Dev";
+				INFOPLIST_KEY_CFBundleDisplayName = "AiChat - Mock";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -746,6 +778,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.koczuba.AIChat.mock;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -918,6 +951,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0CC9BDCB2E215B7A00D5BEE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		0C56E7FC2E328F7100D46D9B /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0CC9BDCB2E215B7A00D5BEE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 		0C77C4CF2DD9E43E005B4378 /* SDWebImageSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
