@@ -50,7 +50,7 @@ struct CreateAccountView: View {
             do {
                 let result = try await authManager.signInApple()
                 print("Did sign in with Apple: \(result.user.uid)")
-                try await userManager.longIn(
+                try await userManager.logIn(
                     auth: result.user,
                     isNewUser: result.isNewUser
                 )

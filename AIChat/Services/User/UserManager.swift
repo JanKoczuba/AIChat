@@ -21,7 +21,7 @@ class UserManager {
         self.currentUser = local.getCurrentUser()
     }
 
-    func longIn(auth: UserAuthInfo, isNewUser: Bool) async throws {
+    func logIn(auth: UserAuthInfo, isNewUser: Bool) async throws {
         let creationVersion = isNewUser ? Utilities.appVersion : nil
         let user = UserModel(auth: auth, creationVersion: creationVersion)
         try await remote.saveUser(user: user)
@@ -55,8 +55,7 @@ class UserManager {
     }
 
     func markOnboardingCompletedForCurrentUser(profileColorHex: String)
-        async throws
-    {
+        async throws {
         let uid = try currentUserId()
         try await remote.markOnboardingCompleted(
             userId: uid,

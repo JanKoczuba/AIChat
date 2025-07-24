@@ -11,6 +11,7 @@ struct AppView: View {
 
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
+    @Environment(LogManager.self) private var logManager
     @State var appState: AppState = AppState()
 
     var body: some View {
@@ -24,6 +25,7 @@ struct AppView: View {
             }
         )
         .environment(appState)
+        .screenAppearAnalytics(name: "AppView")
         .task {
             await checkUserStatus()
         }
@@ -35,31 +37,69 @@ struct AppView: View {
             }
         }
     }
+
+    enum Event: LoggableEvent {
+        case existingAuthStart
+        case existingAuthFail(error: Error)
+        case anonAuthStart
+        case anonAuthSuccess
+        case anonAuthFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .existingAuthStart:    return "AppView_ExistingAuth_Start"
+            case .existingAuthFail:     return "AppView_ExistingAuth_Fail"
+            case .anonAuthStart:        return "AppView_AnonAuth_Start"
+            case .anonAuthSuccess:      return "AppView_AnonAuth_Success"
+            case .anonAuthFail:         return "AppView_AnonAuth_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .existingAuthFail(error: let error), .anonAuthFail(error: let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .existingAuthFail, .anonAuthFail:
+                return .severe
+            default:
+                return .analytic
+            }
+        }
+    }
+
     private func checkUserStatus() async {
         if let user = authManager.auth {
-            print("User already authenticated: \(user.uid)")
+            // User is authenticated
+            logManager.trackEvent(event: Event.existingAuthStart)
 
             do {
-                try await userManager.longIn(auth: user, isNewUser: false)
+                try await userManager.logIn(auth: user, isNewUser: false)
             } catch {
-                print("Failed to log in to authfor existing user: \(error)")
+                logManager.trackEvent(event: Event.existingAuthFail(error: error))
                 try? await Task.sleep(for: .seconds(5))
                 await checkUserStatus()
             }
-
         } else {
+            // User is not authenticated
+            logManager.trackEvent(event: Event.anonAuthStart)
+
             do {
                 let result = try await authManager.signInAnonymously()
 
-                print("Sign in anonymous success: \(result.user.uid)")
+                // log in to app
+                logManager.trackEvent(event: Event.anonAuthSuccess)
 
-                try await userManager.longIn(
-                    auth: result.user,
-                    isNewUser: result.isNewUser
-                )
-
+                // Log in
+                try await userManager.logIn(auth: result.user, isNewUser: result.isNewUser)
             } catch {
-                print(error)
+                logManager.trackEvent(event: Event.anonAuthFail(error: error))
                 try? await Task.sleep(for: .seconds(5))
                 await checkUserStatus()
             }
