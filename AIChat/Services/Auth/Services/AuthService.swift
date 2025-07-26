@@ -13,6 +13,8 @@ protocol AuthService: Sendable {
         onListenerAttached: (any NSObjectProtocol) -> Void
     ) -> AsyncStream<UserAuthInfo?>
 
+    func removeAuthenticatedUserListener(listener: any NSObjectProtocol)
+
     func getAuthenticatedUser() -> UserAuthInfo?
 
     func signInAnonymously() async throws -> (

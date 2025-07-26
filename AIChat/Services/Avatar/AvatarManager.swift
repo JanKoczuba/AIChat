@@ -14,10 +14,7 @@ class AvatarManager {
     private let local: LocalAvatarPersistence
     private let remote: RemoteAvatarService
 
-    init(
-        remote: RemoteAvatarService,
-        local: LocalAvatarPersistence = MockLocalAvatarPersistence()
-    ) {
+    init(remote: RemoteAvatarService, local: LocalAvatarPersistence = MockLocalAvatarPersistence()) {
         self.remote = remote
         self.local = local
     }
@@ -47,8 +44,7 @@ class AvatarManager {
         try await remote.getPopularAvatars()
     }
 
-    func getAvatarsForCategory(category: CharacterOption) async throws
-        -> [AvatarModel] {
+    func getAvatarsForCategory(category: CharacterOption) async throws -> [AvatarModel] {
         try await remote.getAvatarsForCategory(category: category)
     }
 
@@ -63,4 +59,5 @@ class AvatarManager {
     func removeAuthorIdFromAllUserAvatars(userId: String) async throws {
         try await remote.removeAuthorIdFromAllUserAvatars(userId: userId)
     }
+
 }

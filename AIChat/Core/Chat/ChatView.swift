@@ -439,7 +439,7 @@ struct ChatView: View {
             case .messageSeenFail:          return "ChatView_MessageSeen_Fail"
             case .sendMessageStart:         return "ChatView_SendMessage_Start"
             case .sendMessageFail:          return "ChatView_SendMessage_Fail"
-            case .sendMessageSent:          return "ChatView_SendMessage_Send"
+            case .sendMessageSent:          return "ChatView_SendMessage_Sent"
             case .sendMessageResponse:      return "ChatView_SendMessage_Response"
             case .sendMessageResponseSent:  return "ChatView_SendMessage_ResponseSent"
             case .createChatStart:          return "ChatView_CreateChat_Start"
@@ -480,9 +480,9 @@ struct ChatView: View {
 
         var type: LogType {
             switch self {
-            case .loadChatFail, .sendMessageFail:
+            case .loadChatFail, .sendMessageFail, .loadMessagesFail:
                 return .warning
-            case .loadAvatarFail, .loadMessagesFail, .messageSeenFail, .reportChatFail, .deleteChatFail:
+            case .loadAvatarFail, .messageSeenFail, .reportChatFail, .deleteChatFail:
                 return .severe
             default:
                 return .analytic
