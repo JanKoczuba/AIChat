@@ -4,7 +4,6 @@
 //
 //  Created by Jan Koczuba on 17/05/2025.
 //
-
 import SwiftUI
 
 struct ChatsView: View {
@@ -168,10 +167,12 @@ struct ChatsView: View {
                                 ImageLoaderView(urlString: imageName)
                                     .aspectRatio(1, contentMode: .fit)
                                     .clipShape(Circle())
+                                    .frame(minHeight: 60)
 
                                 Text(avatar.name ?? "")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
+                                    .lineLimit(1)
                             }
                             .anyButton {
                                 onAvatarPressed(avatar: avatar)

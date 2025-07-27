@@ -9,8 +9,8 @@ import SwiftUI
 
 struct HeroCellView: View {
 
-    var title: String? = "Some title"
-    var subtitle: String? = "Some subtitle"
+    var title: String? = "This is some title"
+    var subtitle: String? = "This is some subtitle that will go here."
     var imageName: String? = Constants.randomImage
 
     var body: some View {
@@ -22,31 +22,31 @@ struct HeroCellView: View {
                     .fill(.accent)
             }
         }
-        .overlay(
-            alignment: .bottomLeading,
-            content: {
-                VStack(alignment: .leading, spacing: 4) {
-                    if let title {
-                        Text(title)
-                            .font(.headline)
-                    }
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.subheadline)
-                    }
+        .overlay(alignment: .bottomLeading, content: {
+            VStack(alignment: .leading, spacing: 4) {
+                if let title {
+                    Text(title)
+                        .font(.headline)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.3)
                 }
-                .foregroundStyle(.white)
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .addingGradientBackgroundForText()
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.3)
+                }
             }
-        )
+            .foregroundStyle(.white)
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .addingGradientBackgroundForText()
+        })
         .cornerRadius(16)
     }
 }
 
 #Preview {
-
     ScrollView {
         VStack {
             HeroCellView()
@@ -68,7 +68,5 @@ struct HeroCellView: View {
                 .frame(width: 300, height: 200)
         }
         .frame(maxWidth: .infinity)
-
     }
-
 }

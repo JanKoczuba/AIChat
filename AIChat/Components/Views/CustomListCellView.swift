@@ -9,22 +9,21 @@ import SwiftUI
 
 struct CustomListCellView: View {
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var imageName: String? = Constants.randomImage
-    var title: String? = "Alien"
-    var subtitle: String? = "An alien that is smling in the park."
+    var title: String? = "Alpha"
+    var subtitle: String? = "An alien that is smiling in the park."
 
     var body: some View {
         HStack(spacing: 8) {
-
             ZStack {
                 if let imageName {
                     ImageLoaderView(urlString: imageName)
-
                 } else {
                     Rectangle()
                         .fill(.secondary.opacity(0.5))
                 }
-
             }
             .aspectRatio(1, contentMode: .fit)
             .frame(height: 60)
@@ -41,13 +40,10 @@ struct CustomListCellView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
         }
         .padding(12)
         .padding(.vertical, 4)
-
-        .background(Color(uiColor: .systemBackground))
-
+        .background(colorScheme.backgroundPrimary)
     }
 }
 

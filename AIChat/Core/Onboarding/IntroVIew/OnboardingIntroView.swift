@@ -26,6 +26,7 @@ struct OnboardingIntroView: View {
                 Text("with AI generated responses.")
             }
             .baselineOffset(6)
+            .minimumScaleFactor(0.5)
             .frame(maxHeight: .infinity)
             .padding(24)
 
@@ -47,4 +48,5 @@ struct OnboardingIntroView: View {
     NavigationStack {
         OnboardingIntroView()
     }
+    .previewEnvironment()
 }

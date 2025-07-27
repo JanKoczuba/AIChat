@@ -165,6 +165,8 @@ struct ProfileView: View {
         } header: {
             HStack(spacing: 0) {
                 Text("My avatars")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                 Spacer()
 
                 Image(systemName: "plus.circle.fill")
