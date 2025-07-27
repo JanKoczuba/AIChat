@@ -23,6 +23,7 @@ struct AIChatCourseApp: App {
                 .environment(delegate.dependencies.authManager)
                 .environment(delegate.dependencies.logManager)
                 .environment(delegate.dependencies.pushManager)
+                .environment(delegate.dependencies.abTestManager)
         }
     }
 }
@@ -80,6 +81,7 @@ struct Dependencies {
     let chatManager: ChatManager
     let logManager: LogManager
     let pushManager: PushManager
+    let abTestManager: ABTestManager
 
     init(config: BuildConfiguration) {
         switch config {
@@ -92,6 +94,7 @@ struct Dependencies {
             aiManager = AIManager(service: MockAIService())
             avatarManager = AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence())
             chatManager = ChatManager(service: MockChatService())
+            abTestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
         case .dev:
             logManager = LogManager(services: [
                 ConsoleService(printParameters: false),
@@ -104,6 +107,7 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+            abTestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
         case .prod:
             logManager = LogManager(services: [
                 FirebaseAnalyticsService(),
@@ -115,6 +119,7 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
+            abTestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
         }
 
         pushManager = PushManager(logManager: logManager)
@@ -132,5 +137,6 @@ extension View {
             .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil)))
             .environment(AppState())
             .environment(LogManager(services: []))
+            .environment(ABTestManager(service: MockABTestService()))
     }
 }
