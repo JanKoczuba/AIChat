@@ -107,7 +107,7 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
-            abTestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
+            abTestManager = ABTestManager(service: LocalABTestService(), logManager: logManager)
         case .prod:
             logManager = LogManager(services: [
                 FirebaseAnalyticsService(),
@@ -119,7 +119,7 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
-            abTestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
+            abTestManager = ABTestManager(service: LocalABTestService(), logManager: logManager)
         }
 
         pushManager = PushManager(logManager: logManager)
