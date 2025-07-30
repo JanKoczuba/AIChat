@@ -143,5 +143,6 @@ extension View {
             .environment(AppState())
             .environment(LogManager(services: []))
             .environment(ABTestManager(service: MockABTestService()))
+            .environment(PurchaseManager(service: MockPurchaseService()))
     }
 }
