@@ -24,6 +24,7 @@ struct AIChatCourseApp: App {
                 .environment(delegate.dependencies.logManager)
                 .environment(delegate.dependencies.pushManager)
                 .environment(delegate.dependencies.abTestManager)
+                .environment(delegate.dependencies.purchaseManager)
         }
     }
 }
@@ -82,6 +83,7 @@ struct Dependencies {
     let logManager: LogManager
     let pushManager: PushManager
     let abTestManager: ABTestManager
+    let purchaseManager: PurchaseManager
 
     init(config: BuildConfiguration) {
         switch config {
@@ -95,6 +97,7 @@ struct Dependencies {
             avatarManager = AvatarManager(remote: MockAvatarService(), local: MockLocalAvatarPersistence())
             chatManager = ChatManager(service: MockChatService())
             abTestManager = ABTestManager(service: MockABTestService(), logManager: logManager)
+            purchaseManager = PurchaseManager(service: MockPurchaseService(), logManager: logManager)
         case .dev:
             logManager = LogManager(services: [
                 ConsoleService(printParameters: false),
@@ -108,6 +111,7 @@ struct Dependencies {
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
             abTestManager = ABTestManager(service: LocalABTestService(), logManager: logManager)
+            purchaseManager = PurchaseManager(service: StoreKitPurchaseService(), logManager: logManager)
         case .prod:
             logManager = LogManager(services: [
                 FirebaseAnalyticsService(),
@@ -120,6 +124,7 @@ struct Dependencies {
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
             abTestManager = ABTestManager(service: LocalABTestService(), logManager: logManager)
+            purchaseManager = PurchaseManager(service: StoreKitPurchaseService(), logManager: logManager)
         }
 
         pushManager = PushManager(logManager: logManager)
