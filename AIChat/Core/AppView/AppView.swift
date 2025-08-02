@@ -13,6 +13,7 @@ struct AppView: View {
     @Environment(AuthManager.self) private var authManager
     @Environment(UserManager.self) private var userManager
     @Environment(LogManager.self) private var logManager
+    @Environment(PurchaseManager.self) private var purchaseManager
     @Environment(\.scenePhase) private var scenePhase
     @State var appState: AppState = AppState()
 
@@ -113,6 +114,13 @@ struct AppView: View {
 
             do {
                 try await userManager.logIn(auth: user, isNewUser: false)
+                try await purchaseManager.logIn(
+                    userId: user.uid,
+                    attributes: PurchaseProfileAttributes(
+                        email: user.email,
+                        firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceID
+                    )
+                )
             } catch {
                 logManager.trackEvent(event: Event.existingAuthFail(error: error))
                 try? await Task.sleep(for: .seconds(5))
@@ -130,6 +138,12 @@ struct AppView: View {
 
                 // Log in
                 try await userManager.logIn(auth: result.user, isNewUser: result.isNewUser)
+                try await purchaseManager.logIn(
+                    userId: result.user.uid,
+                    attributes: PurchaseProfileAttributes(
+                        firebaseAppInstanceId: FirebaseAnalyticsService.appInstanceID
+                    )
+                )
             } catch {
                 logManager.trackEvent(event: Event.anonAuthFail(error: error))
                 try? await Task.sleep(for: .seconds(5))
@@ -139,15 +153,17 @@ struct AppView: View {
     }
 }
 
-#Preview("AppView - Tabar") {
-    AppView(appState: AppState(showTabBarView: true))
-        .environment(AuthManager(service: MockAuthService(user: .mock())))
+#Preview("AppView - Tabbar") {
+    AppView(appState: AppState())
         .environment(UserManager(services: MockUserServices(user: .mock)))
+        .environment(UserManager(services: MockUserServices(user: .mock)))
+        .environment(AuthManager(service: MockAuthService(user: .mock())))
+        .previewEnvironment()
 
 }
-
 #Preview("AppView - Onboarding") {
-    AppView(appState: AppState(showTabBarView: false))
-        .environment(AuthManager(service: MockAuthService(user: nil)))
+    AppView(appState: AppState())
         .environment(UserManager(services: MockUserServices(user: nil)))
+        .environment(AuthManager(service: MockAuthService(user: nil)))
+        .previewEnvironment()
 }

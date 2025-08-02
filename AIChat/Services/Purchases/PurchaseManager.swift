@@ -12,6 +12,9 @@ protocol PurchaseService: Sendable {
     func getProducts(productIds: [String]) async throws -> [AnyProduct]
     func restorePurchase() async throws -> [PurchasedEntitlement]
     func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement]
+    func logIn(userId: String) async throws -> [PurchasedEntitlement]
+    func updateProfileAttributes(attributes: PurchaseProfileAttributes) async throws
+    func logOut() async throws
 }
 
 struct MockPurchaseService: PurchaseService {
@@ -42,6 +45,18 @@ struct MockPurchaseService: PurchaseService {
 
     func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement] {
         activeEntitlements
+    }
+
+    func logIn(userId: String) async throws -> [PurchasedEntitlement] {
+        activeEntitlements
+    }
+
+    func updateProfileAttributes(attributes: PurchaseProfileAttributes) async throws {
+
+    }
+
+    func logOut() async throws {
+
     }
 }
 
@@ -126,11 +141,25 @@ struct StoreKitPurchaseService: PurchaseService {
             throw PurchaseError.failedToPurchase
         }
     }
+
+    func logIn(userId: String) async throws -> [PurchasedEntitlement] {
+        // StoreKit does not require user profile / log in
+        try await getUserEntitlements()
+    }
+
+    func updateProfileAttributes(attributes: PurchaseProfileAttributes) async throws {
+        // StoreKit does not require user profile / log in
+    }
+
+    func logOut() async throws {
+        // StoreKit does not require user profile / log in
+    }
 }
 
 enum PurchaseError: LocalizedError {
     case productNotFound, userCancelledPurchase, failedToPurchase
 }
+
 
 import RevenueCat
 struct RevenueCatPurchaseService: PurchaseService {
@@ -188,15 +217,28 @@ struct RevenueCatPurchaseService: PurchaseService {
         if let email = attributes.email {
             Purchases.shared.attribution.setEmail(email)
         }
+        if let firebaseAppInstanceId = attributes.firebaseAppInstanceId {
+            Purchases.shared.attribution.setFirebaseAppInstanceID(firebaseAppInstanceId)
+        }
     }
 
     func logOut() async throws {
         let _ = try await Purchases.shared.logOut()
     }
+
 }
 
 struct PurchaseProfileAttributes {
     let email: String?
+    let firebaseAppInstanceId: String?
+
+    init(
+        email: String? = nil,
+        firebaseAppInstanceId: String? = nil
+    ) {
+        self.email = email
+        self.firebaseAppInstanceId = firebaseAppInstanceId
+    }
 }
 
 @MainActor
@@ -208,6 +250,7 @@ class PurchaseManager {
 
     /// User's pruchased entitlements, sorted by most recent
     private(set) var entitlements: [PurchasedEntitlement] = []
+    private(set) var listener: Task<Void, Error>?
 
     init(service: PurchaseService, logManager: LogManager? = nil) {
         self.service = service
@@ -221,7 +264,9 @@ class PurchaseManager {
                 updateActiveEntitlements(entitlements: entitlements)
             }
         }
-        Task {
+
+        listener?.cancel()
+        listener = Task {
             await service.listenForTransactions { entitlements in
                 await updateActiveEntitlements(entitlements: entitlements)
             }
@@ -274,6 +319,44 @@ class PurchaseManager {
         }
     }
 
+    @discardableResult
+    func logIn(userId: String, attributes: PurchaseProfileAttributes? = nil) async throws -> [PurchasedEntitlement] {
+        logManager?.trackEvent(event: Event.logInStart)
+
+        do {
+            let entitlements = try await service.logIn(userId: userId)
+            logManager?.trackEvent(event: Event.logInSuccess(entitlements: entitlements))
+            updateActiveEntitlements(entitlements: entitlements)
+
+            if let attributes {
+                try await updateProfileAttributes(attributes: attributes)
+            }
+
+            return entitlements
+        } catch {
+            logManager?.trackEvent(event: Event.logInFail(error: error))
+            throw error
+        }
+    }
+
+    func updateProfileAttributes(attributes: PurchaseProfileAttributes) async throws {
+        try await service.updateProfileAttributes(attributes: attributes)
+    }
+
+    func logOut() async throws {
+        do {
+            try await service.logOut()
+            entitlements.removeAll()
+            configure()
+
+            logManager?.trackEvent(event: Event.logOutSuccess)
+        } catch {
+            logManager?.trackEvent(event: Event.logOutFail(error: error))
+            throw error
+        }
+    }
+
+
     enum Event: LoggableEvent {
         case purchaseStart
         case purchaseSuccess(entitlements: [PurchasedEntitlement])
@@ -284,6 +367,11 @@ class PurchaseManager {
         case getProductsStart
         case getProductsSuccess(products: [AnyProduct])
         case getProductsFail(error: Error)
+        case logInStart
+        case logInSuccess(entitlements: [PurchasedEntitlement])
+        case logInFail(error: Error)
+        case logOutSuccess
+        case logOutFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -296,16 +384,21 @@ class PurchaseManager {
             case .getProductsStart:         return "PurMan_GetProducts_Start"
             case .getProductsSuccess:       return "PurMan_GetProducts_Success"
             case .getProductsFail:          return "PurMan_GetProducts_Fail"
+            case .logInStart:               return "PurMan_LogIn_Start"
+            case .logInSuccess:             return "PurMan_LogIn_Success"
+            case .logInFail:                return "PurMan_LogIn_Fail"
+            case .logOutSuccess:            return "PurMan_LogOut_Success"
+            case .logOutFail:               return "PurMan_LogOut_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .purchaseSuccess(entitlements: let entitlements), .restorePurchaseSuccess(entitlements: let entitlements):
+            case .purchaseSuccess(entitlements: let entitlements), .restorePurchaseSuccess(entitlements: let entitlements), .logInSuccess(entitlements: let entitlements):
                 return entitlements.eventParameters
             case .getProductsSuccess(products: let products):
                 return products.eventParameters
-            case .purchaseFail(error: let error), .getProductsFail(error: let error), .restorePurchaseFail(error: let error):
+            case .purchaseFail(error: let error), .getProductsFail(error: let error), .restorePurchaseFail(error: let error), .logInFail(error: let error), .logOutFail(error: let error):
                 return error.eventParameters
             default:
                 return nil
@@ -314,7 +407,7 @@ class PurchaseManager {
 
         var type: LogType {
             switch self {
-            case .purchaseFail, .getProductsFail, .restorePurchaseFail:
+            case .purchaseFail, .getProductsFail, .restorePurchaseFail, .logInFail, .logOutFail:
                 return .severe
             default:
                 return .analytic
@@ -322,3 +415,4 @@ class PurchaseManager {
         }
     }
 }
+
