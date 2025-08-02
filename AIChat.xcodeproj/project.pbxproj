@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		0C0A2A492DE9D4E100B0A37E /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 0C0A2A482DE9D4E100B0A37E /* SwiftfulUtilities */; };
 		0C0DF8362E250B58002E1C05 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 0C0DF8352E250B58002E1C05 /* FirebaseStorage */; };
+		0C1665B82E3E3D88008652AB /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1665B72E3E3D88008652AB /* RevenueCat */; };
+		0C1665BA2E3E3D9D008652AB /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1665B92E3E3D9D008652AB /* RevenueCatUI */; };
 		0C56E7FD2E328F7100D46D9B /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0C56E7FC2E328F7100D46D9B /* FirebaseCrashlytics */; };
 		0C77C4D02DD9E43E005B4378 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0C77C4CF2DD9E43E005B4378 /* SDWebImageSwiftUI */; };
 		0C889F412E240047005D8977 /* OpenAI in Frameworks */ = {isa = PBXBuildFile; productRef = 0C889F402E240047005D8977 /* OpenAI */; };
@@ -82,6 +84,7 @@
 			files = (
 				0CC9BEF92E22787900D5BEE4 /* SignInAppleAsync in Frameworks */,
 				0C77C4D02DD9E43E005B4378 /* SDWebImageSwiftUI in Frameworks */,
+				0C1665BA2E3E3D9D008652AB /* RevenueCatUI in Frameworks */,
 				0CC9BFA52E22EC4700D5BEE4 /* SwiftfulFirestore in Frameworks */,
 				0CE00E8B2E39401900921962 /* FirebaseRemoteConfig in Frameworks */,
 				0CC9BDCD2E215B7A00D5BEE4 /* FirebaseAuth in Frameworks */,
@@ -89,6 +92,7 @@
 				0C56E7FD2E328F7100D46D9B /* FirebaseCrashlytics in Frameworks */,
 				0C0DF8362E250B58002E1C05 /* FirebaseStorage in Frameworks */,
 				0C9C21982E314841000C6B86 /* Mixpanel in Frameworks */,
+				0C1665B82E3E3D88008652AB /* RevenueCat in Frameworks */,
 				0CC9BFA22E22A9EF00D5BEE4 /* FirebaseFirestore in Frameworks */,
 				0C0A2A492DE9D4E100B0A37E /* SwiftfulUtilities in Frameworks */,
 				0C9C208F2E313906000C6B86 /* FirebaseAnalytics in Frameworks */,
@@ -174,6 +178,8 @@
 				0C9C21972E314841000C6B86 /* Mixpanel */,
 				0C56E7FC2E328F7100D46D9B /* FirebaseCrashlytics */,
 				0CE00E8A2E39401900921962 /* FirebaseRemoteConfig */,
+				0C1665B72E3E3D88008652AB /* RevenueCat */,
+				0C1665B92E3E3D9D008652AB /* RevenueCatUI */,
 			);
 			productName = AIChat;
 			productReference = 0CE1D8EC2DD50D16008FBF61 /* AIChat.app */;
@@ -265,6 +271,7 @@
 				0CC9BFA32E22EC4700D5BEE4 /* XCRemoteSwiftPackageReference "SwiftfulFirestore" */,
 				0C889F3F2E240047005D8977 /* XCRemoteSwiftPackageReference "OpenAI" */,
 				0C9C21962E314841000C6B86 /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
+				0C1665B62E3E3D88008652AB /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0CE1D8ED2DD50D16008FBF61 /* Products */;
@@ -897,6 +904,14 @@
 				minimumVersion = 1.1.6;
 			};
 		};
+		0C1665B62E3E3D88008652AB /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.34.0;
+			};
+		};
 		0C77C4CE2DD9E43E005B4378 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI.git";
@@ -957,6 +972,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0CC9BDCB2E215B7A00D5BEE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		0C1665B72E3E3D88008652AB /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C1665B62E3E3D88008652AB /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		0C1665B92E3E3D9D008652AB /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C1665B62E3E3D88008652AB /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
 		};
 		0C56E7FC2E328F7100D46D9B /* FirebaseCrashlytics */ = {
 			isa = XCSwiftPackageProductDependency;
