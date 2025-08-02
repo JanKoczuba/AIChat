@@ -177,6 +177,26 @@ struct RevenueCatPurchaseService: PurchaseService {
         let entitlements = customerInfo.entitlements.all.asPurchasedEntitlements()
         return entitlements
     }
+
+    func logIn(userId: String) async throws -> [PurchasedEntitlement] {
+        let (customerInfo, _) = try await Purchases.shared.logIn(userId)
+        let entitlements = customerInfo.entitlements.all.asPurchasedEntitlements()
+        return entitlements
+    }
+
+    func updateProfileAttributes(attributes: PurchaseProfileAttributes) async throws {
+        if let email = attributes.email {
+            Purchases.shared.attribution.setEmail(email)
+        }
+    }
+
+    func logOut() async throws {
+        let _ = try await Purchases.shared.logOut()
+    }
+}
+
+struct PurchaseProfileAttributes {
+    let email: String?
 }
 
 @MainActor
@@ -302,4 +322,3 @@ class PurchaseManager {
         }
     }
 }
-
