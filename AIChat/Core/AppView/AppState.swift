@@ -16,10 +16,8 @@ class AppState {
         }
     }
 
-    init(
-        showTabBarView: Bool = UserDefaults.showTabbarView
-    ) {
-        self.showTabBar = showTabBarView
+    init(showTabBar: Bool = UserDefaults.showTabbarView) {
+        self.showTabBar = showTabBar
     }
 
     func updateViewState(showTabBarView: Bool) {
