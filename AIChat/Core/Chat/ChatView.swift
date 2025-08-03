@@ -184,6 +184,7 @@ struct ChatView: View {
             .autocorrectionDisabled()
             .padding(12)
             .padding(.trailing, 60)
+            .accessibilityIdentifier("ChatTextField")
             .overlay(
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 32))
@@ -506,34 +507,6 @@ struct ChatView: View {
                 return .analytic
             }
         }
-    }
-}
-
-#Preview("Working chat - Not Premium") {
-    NavigationStack {
-        ChatView()
-            .previewEnvironment()
-    }
-}
-#Preview("Working chat - Premium") {
-    NavigationStack {
-        ChatView()
-            .environment(PurchaseManager(service: MockPurchaseService(activeEntitlements: [.mock])))
-            .previewEnvironment()
-    }
-}
-#Preview("Slow AI generation") {
-    NavigationStack {
-        ChatView()
-            .environment(AIManager(service: MockAIService(delay: 20)))
-            .previewEnvironment()
-    }
-}
-#Preview("Failed AI generation") {
-    NavigationStack {
-        ChatView()
-            .environment(AIManager(service: MockAIService(delay: 2, showError: true)))
-            .previewEnvironment()
     }
 }
 
