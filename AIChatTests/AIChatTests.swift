@@ -2,7 +2,7 @@
 //  AIChatTests.swift
 //  AIChatTests
 //
-//  Created by Jan Koczuba on 14/05/2025.
+//  Created by Jan Koczuba on 03/08/2025.
 //
 
 import Testing

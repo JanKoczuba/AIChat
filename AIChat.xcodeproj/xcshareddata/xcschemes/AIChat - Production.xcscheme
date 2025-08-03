@@ -29,6 +29,30 @@
       selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "0C695A212E3F82A500F818F5"
+               BuildableName = "AIChatTests2.xctest"
+               BlueprintName = "AIChatTests2"
+               ReferencedContainer = "container:AIChat.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "0C695A2F2E3F830300F818F5"
+               BuildableName = "AIChatTests.xctest"
+               BlueprintName = "AIChatTests"
+               ReferencedContainer = "container:AIChat.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Release"
