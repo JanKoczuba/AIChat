@@ -63,6 +63,7 @@ struct WelcomeView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
             }
+            .accessibilityIdentifier("StartButton")
             .frame(maxWidth: 500)
 
             Text("Already have an account? Sign in!")

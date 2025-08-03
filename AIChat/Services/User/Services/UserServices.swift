@@ -4,12 +4,12 @@
 //
 //  Created by Jan Koczuba on 13/07/2025.
 //
-
+@MainActor
 protocol UserServices {
     var remote: RemoteUserService { get }
     var local: LocalUserPersistence { get }
 }
-
+@MainActor
 struct MockUserServices: UserServices {
     let remote: RemoteUserService
     let local: LocalUserPersistence
@@ -18,7 +18,6 @@ struct MockUserServices: UserServices {
         self.remote = MockUserService(user: user)
         self.local = MockUserPersistence(user: user)
     }
-
 }
 
 struct ProductionUserServices: UserServices {

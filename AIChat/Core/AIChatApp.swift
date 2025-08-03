@@ -5,26 +5,46 @@
 //  Created by Jan Koczuba on 14/05/2025.
 //
 
-import FirebaseCore
 import SwiftUI
+import Firebase
+import SwiftfulUtilities
 
 @main
-struct AIChatCourseApp: App {
+struct AppEntryPoint {
+
+    static func main() {
+        if Utilities.isUnitTesting {
+            TestingApp.main()
+        } else {
+            AIChatApp.main()
+        }
+    }
+}
+
+struct TestingApp: App {
+    var body: some Scene {
+        WindowGroup {
+            Text("Testing")
+        }
+    }
+}
+
+struct AIChatApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
         WindowGroup {
             AppView()
+                .environment(delegate.dependencies.purchaseManager)
+                .environment(delegate.dependencies.abTestManager)
+                .environment(delegate.dependencies.pushManager)
                 .environment(delegate.dependencies.chatManager)
                 .environment(delegate.dependencies.aiManager)
                 .environment(delegate.dependencies.avatarManager)
                 .environment(delegate.dependencies.userManager)
                 .environment(delegate.dependencies.authManager)
                 .environment(delegate.dependencies.logManager)
-                .environment(delegate.dependencies.pushManager)
-                .environment(delegate.dependencies.abTestManager)
-                .environment(delegate.dependencies.purchaseManager)
         }
     }
 }
@@ -32,21 +52,23 @@ struct AIChatCourseApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     var dependencies: Dependencies!
 
-    func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication
-            .LaunchOptionsKey: Any]? = nil
-    ) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
 
-        let config: BuildConfiguration
+        var config: BuildConfiguration
 
-        #if MOCK
+#if MOCK
         config = .mock(isSignedIn: true)
-        #elseif DEV
+#elseif DEV
         config = .dev
-        #else
+#else
         config = .prod
-        #endif
+#endif
+
+        if Utilities.isUITesting {
+            let isSignedIn = ProcessInfo.processInfo.arguments.contains("SIGNED_IN")
+            UserDefaults.showTabbarView = isSignedIn
+            config = .mock(isSignedIn: isSignedIn)
+        }
 
         config.configure()
         dependencies = Dependencies(config: config)
@@ -60,13 +82,14 @@ enum BuildConfiguration {
     func configure() {
         switch self {
         case .mock:
+            // Mock build does NOT run Firebase
             break
         case .dev:
-            let plist = Bundle.main.path(forResource: "GoogleServiceInfo-Dev", ofType: "plist")!
+            let plist = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist")!
             let options = FirebaseOptions(contentsOfFile: plist)!
             FirebaseApp.configure(options: options)
         case .prod:
-            let plist = Bundle.main.path(forResource: "GoogleServiceInfo-Prod", ofType: "plist")!
+            let plist = Bundle.main.path(forResource: "GoogleService-Info-Prod", ofType: "plist")!
             let options = FirebaseOptions(contentsOfFile: plist)!
             FirebaseApp.configure(options: options)
         }
@@ -100,7 +123,7 @@ struct Dependencies {
             purchaseManager = PurchaseManager(service: MockPurchaseService(), logManager: logManager)
         case .dev:
             logManager = LogManager(services: [
-                ConsoleService(printParameters: false),
+                ConsoleService(printParameters: true),
                 FirebaseAnalyticsService(),
                 MixpanelService(token: Keys.mixpanelToken),
                 FirebaseCrashlyticsService()
@@ -114,7 +137,8 @@ struct Dependencies {
             purchaseManager = PurchaseManager(
                 service: RevenueCatPurchaseService(apiKey: Keys.revenueCatAPIKey), // StoreKitPurchaseService(),
                 logManager: logManager
-            )        case .prod:
+            )
+        case .prod:
             logManager = LogManager(services: [
                 FirebaseAnalyticsService(),
                 MixpanelService(token: Keys.mixpanelToken),
@@ -125,7 +149,7 @@ struct Dependencies {
             aiManager = AIManager(service: OpenAIService())
             avatarManager = AvatarManager(remote: FirebaseAvatarService(), local: SwiftDataLocalAvatarPersistence())
             chatManager = ChatManager(service: FirebaseChatService())
-            abTestManager = ABTestManager(service: LocalABTestService(), logManager: logManager)
+            abTestManager = ABTestManager(service: FirebaseABTestService(), logManager: logManager)
             purchaseManager = PurchaseManager(service: StoreKitPurchaseService(), logManager: logManager)
         }
 
@@ -136,6 +160,8 @@ struct Dependencies {
 extension View {
     func previewEnvironment(isSignedIn: Bool = true) -> some View {
         self
+            .environment(PurchaseManager(service: MockPurchaseService()))
+            .environment(ABTestManager(service: MockABTestService()))
             .environment(PushManager())
             .environment(ChatManager(service: MockChatService()))
             .environment(AIManager(service: MockAIService()))
@@ -144,7 +170,5 @@ extension View {
             .environment(AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil)))
             .environment(AppState())
             .environment(LogManager(services: []))
-            .environment(ABTestManager(service: MockABTestService()))
-            .environment(PurchaseManager(service: MockPurchaseService()))
     }
 }
