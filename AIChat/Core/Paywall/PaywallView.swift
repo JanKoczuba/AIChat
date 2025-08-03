@@ -19,17 +19,20 @@ struct PaywallView: View {
 
     var body: some View {
         ZStack {
-            if products.isEmpty {
-                ProgressView()
-            } else {
-                CustomPaywallView(
-                    products: products,
-                    onBackButtonPressed: onBackButtonPressed,
-                    onRestorePurchasePressed: onRestorePurchasePressed,
-                    onPurchaseProductPressed: onPurchaseProductPressed
-                )
-            }
+            RevenueCatPaywallView()
+
+            //            if products.isEmpty {
+            //                ProgressView()
+            //            } else {
+            //                CustomPaywallView(
+            //                    products: products,
+            //                    onBackButtonPressed: onBackButtonPressed,
+            //                    onRestorePurchasePressed: onRestorePurchasePressed,
+            //                    onPurchaseProductPressed: onPurchaseProductPressed
+            //                )
+            //            }
         }
+
         //        StoreKitPaywallView(
         //            productIds: productIds,
         //            onInAppPurchaseStart: onPurchaseStart,
