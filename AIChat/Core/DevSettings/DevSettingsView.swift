@@ -18,6 +18,7 @@ struct DevSettingsView: View {
     @State private var createAccountTest: Bool = false
     @State private var onboardingCommunityTest: Bool = false
     @State private var categoryRowTest: CategoryRowTestOption = .default
+    @State private var paywallTest: PaywallTestOption = .default
 
     var body: some View {
         NavigationStack {
@@ -44,6 +45,7 @@ struct DevSettingsView: View {
         createAccountTest = abTestManager.activeTests.createAccountTest
         onboardingCommunityTest = abTestManager.activeTests.onboardingCommunityTest
         categoryRowTest = abTestManager.activeTests.categoryRowTest
+        paywallTest = abTestManager.activeTests.paywallTest
     }
 
     private var backButtonView: some View {
@@ -92,6 +94,17 @@ struct DevSettingsView: View {
         )
     }
 
+    private func handlePaywallOptionChange(oldValue: PaywallTestOption, newValue: PaywallTestOption) {
+        updateTest(
+            property: &paywallTest,
+            newValue: newValue,
+            savedValue: abTestManager.activeTests.paywallTest,
+            updateAction: { tests in
+                tests.update(paywallTest: newValue)
+            }
+        )
+    }
+
     private func updateTest<Value: Equatable>(
         property: inout Value,
         newValue: Value,
@@ -125,6 +138,13 @@ struct DevSettingsView: View {
             }
             .onChange(of: categoryRowTest, handleCategoryRowOptionChange)
 
+            Picker("Paywall Test", selection: $paywallTest) {
+                ForEach(PaywallTestOption.allCases, id: \.self) { option in
+                    Text(option.rawValue)
+                        .id(option)
+                }
+            }
+            .onChange(of: paywallTest, handlePaywallOptionChange)
         } header: {
             Text("AB Tests")
         }
