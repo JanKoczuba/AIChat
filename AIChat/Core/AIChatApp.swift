@@ -234,12 +234,24 @@ extension View {
             .environment(LogManager(services: []))
     }
 }
-
 @MainActor
 class DevPreview {
     static let shared = DevPreview()
 
-    let container: DependencyContainer
+    var container: DependencyContainer {
+        let container = DependencyContainer()
+        container.register(AuthManager.self, service: authManager)
+        container.register(UserManager.self, service: userManager)
+        container.register(AIManager.self, service: aiManager)
+        container.register(AvatarManager.self, service: avatarManager)
+        container.register(ChatManager.self, service: chatManager)
+        container.register(LogManager.self, service: logManager)
+        container.register(PushManager.self, service: pushManager)
+        container.register(ABTestManager.self, service: abTestManager)
+        container.register(PurchaseManager.self, service: purchaseManager)
+        return container
+    }
+
     let authManager: AuthManager
     let userManager: UserManager
     let aiManager: AIManager
@@ -260,18 +272,6 @@ class DevPreview {
         self.pushManager = PushManager()
         self.abTestManager = ABTestManager(service: MockABTestService())
         self.purchaseManager = PurchaseManager(service: MockPurchaseService())
-
-        let container = DependencyContainer()
-        container.register(AuthManager.self, service: authManager)
-        container.register(UserManager.self, service: userManager)
-        container.register(AIManager.self, service: aiManager)
-        container.register(AvatarManager.self, service: avatarManager)
-        container.register(ChatManager.self, service: chatManager)
-        container.register(LogManager.self, service: logManager)
-        container.register(PushManager.self, service: pushManager)
-        container.register(ABTestManager.self, service: abTestManager)
-        container.register(PurchaseManager.self, service: purchaseManager)
-        self.container = container
     }
 
 }
