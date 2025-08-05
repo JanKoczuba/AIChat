@@ -5,7 +5,6 @@
 //  Created by Jan Koczuba on 30/07/2025.
 //
 
-
 import SwiftUI
 
 public enum EntitlementOwnershipOption: Codable, Sendable {

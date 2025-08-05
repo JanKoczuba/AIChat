@@ -2,35 +2,34 @@
 //  AppState.swift
 //  AIChat
 //
-//  Created by Jan Koczuba on 17/05/2025.
+//  Created by Jan Koczuba on 05/08/2025.
 //
-
 import SwiftUI
 
 @Observable
 class AppState {
-
+    
     private(set) var showTabBar: Bool {
         didSet {
             UserDefaults.showTabbarView = showTabBar
         }
     }
-
+    
     init(showTabBar: Bool = UserDefaults.showTabbarView) {
         self.showTabBar = showTabBar
     }
-
+    
     func updateViewState(showTabBarView: Bool) {
         showTabBar = showTabBarView
     }
 }
 
-extension UserDefaults {
-
+fileprivate extension UserDefaults {
+    
     private struct Keys {
         static let showTabbarView = "showTabbarView"
     }
-
+    
     static var showTabbarView: Bool {
         get {
             standard.bool(forKey: Keys.showTabbarView)
@@ -39,4 +38,5 @@ extension UserDefaults {
             standard.set(newValue, forKey: Keys.showTabbarView)
         }
     }
+    
 }

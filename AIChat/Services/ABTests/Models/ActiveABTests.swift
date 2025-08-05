@@ -37,7 +37,7 @@ struct ActiveABTests: Codable {
             "test\(CodingKeys.createAccountTest.rawValue)": createAccountTest,
             "test\(CodingKeys.onboardingCommunityTest.rawValue)": onboardingCommunityTest,
             "test\(CodingKeys.categoryRowTest.rawValue)": categoryRowTest.rawValue,
-            "test\(CodingKeys.paywallTest.rawValue)": paywallTest.rawValue,
+            "test\(CodingKeys.paywallTest.rawValue)": paywallTest.rawValue
         ]
         return dict.compactMapValues({ $0 })
     }
@@ -93,7 +93,7 @@ extension ActiveABTests {
             CodingKeys.createAccountTest.rawValue: createAccountTest as NSObject,
             CodingKeys.onboardingCommunityTest.rawValue: onboardingCommunityTest as NSObject,
             CodingKeys.categoryRowTest.rawValue: categoryRowTest.rawValue as NSObject,
-            CodingKeys.paywallTest.rawValue: paywallTest.rawValue as NSObject,
+            CodingKeys.paywallTest.rawValue: paywallTest.rawValue as NSObject
         ]
     }
 }

@@ -13,15 +13,25 @@ struct TabBarView: View {
 
     var body: some View {
         TabView {
-            ExploreView(viewModel: ExploreViewModel(container: container))
-                .tabItem {
-                    Label("Explore", systemImage: "eyes")
-                }
+            ExploreView(
+                viewModel: ExploreViewModel(
+                    interactor: CoreInteractor(container: container)
+                )
+            )
+            .tabItem {
+                Label("Explore", systemImage: "eyes")
+            }
 
-            ChatsView()
-                .tabItem {
-                    Label("Chats", systemImage: "bubble.left.and.bubble.right.fill")
-                }
+            ChatsView(
+                viewModel: ChatsViewModel(
+                    interactor: CoreInteractor(
+                        container: container
+                    )
+                )
+            )
+            .tabItem {
+                Label("Chats", systemImage: "bubble.left.and.bubble.right.fill")
+            }
 
             ProfileView(
                 viewModel: ProfileViewModel(

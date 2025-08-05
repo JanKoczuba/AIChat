@@ -26,4 +26,3 @@ extension View {
         modifier(AnyNotificationListenerViewModifier(notificationName: name, onNotificationRecieved: action))
     }
 }
-

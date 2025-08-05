@@ -12,16 +12,16 @@ import SwiftUI
 class AvatarManager {
 
     private let local: LocalAvatarPersistence
-    private let remote: RemoteAvatarService
+    private let service: RemoteAvatarService
 
-    init(remote: RemoteAvatarService, local: LocalAvatarPersistence = MockLocalAvatarPersistence()) {
-        self.remote = remote
+    init(service: RemoteAvatarService, local: LocalAvatarPersistence = MockLocalAvatarPersistence()) {
+        self.service = service
         self.local = local
     }
 
     func addRecentAvatar(avatar: AvatarModel) async throws {
         try local.addRecentAvatar(avatar: avatar)
-        try await remote.incrementAvatarClickCount(avatarId: avatar.id)
+        try await service.incrementAvatarClickCount(avatarId: avatar.id)
     }
 
     func getRecentAvatars() throws -> [AvatarModel] {
@@ -29,35 +29,35 @@ class AvatarManager {
     }
 
     func getAvatar(id: String) async throws -> AvatarModel {
-        try await remote.getAvatar(id: id)
+        try await service.getAvatar(id: id)
     }
 
     func createAvatar(avatar: AvatarModel, image: UIImage) async throws {
-        try await remote.createAvatar(avatar: avatar, image: image)
+        try await service.createAvatar(avatar: avatar, image: image)
     }
 
     func getFeaturedAvatars() async throws -> [AvatarModel] {
-        try await remote.getFeaturedAvatars()
+        try await service.getFeaturedAvatars()
     }
 
     func getPopularAvatars() async throws -> [AvatarModel] {
-        try await remote.getPopularAvatars()
+        try await service.getPopularAvatars()
     }
 
     func getAvatarsForCategory(category: CharacterOption) async throws -> [AvatarModel] {
-        try await remote.getAvatarsForCategory(category: category)
+        try await service.getAvatarsForCategory(category: category)
     }
 
     func getAvatarsForAuthor(userId: String) async throws -> [AvatarModel] {
-        try await remote.getAvatarsForAuthor(userId: userId)
+        try await service.getAvatarsForAuthor(userId: userId)
     }
 
     func removeAuthorIdFromAvatar(avatarId: String) async throws {
-        try await remote.removeAuthorIdFromAvatar(avatarId: avatarId)
+        try await service.removeAuthorIdFromAvatar(avatarId: avatarId)
     }
 
     func removeAuthorIdFromAllUserAvatars(userId: String) async throws {
-        try await remote.removeAuthorIdFromAllUserAvatars(userId: userId)
+        try await service.removeAuthorIdFromAllUserAvatars(userId: userId)
     }
 
 }

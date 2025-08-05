@@ -9,13 +9,8 @@ import SwiftUI
 
 struct OnboardingCompletedView: View {
 
-    @Environment(AppState.self) private var root
-    @Environment(UserManager.self) private var userManager
-    @Environment(LogManager.self) private var logManager
-
-    @State private var isCompletingProfileSetup: Bool = false
+    @State var viewModel: OnboardingCompletedViewModel
     var selectedColor: Color = .orange
-    @State private var showAlert: AnyAppAlert?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -32,77 +27,26 @@ struct OnboardingCompletedView: View {
         .frame(maxHeight: .infinity)
         .safeAreaInset(edge: .bottom, content: {
             AsyncCallToActionButton(
-                isLoading: isCompletingProfileSetup,
+                isLoading: viewModel.isCompletingProfileSetup,
                 title: "Finish",
-                action: onFinishButtonPressed
+                action: {
+                    viewModel.onFinishButtonPressed(selectedColor: selectedColor)
+                }
             )
             .accessibilityIdentifier("FinishButton")
         })
         .padding(24)
         .toolbar(.hidden, for: .navigationBar)
         .screenAppearAnalytics(name: "OnboardingCompletedView")
-        .showCustomAlert(alert: $showAlert)
+        .showCustomAlert(alert: $viewModel.showAlert)
     }
 
-    enum Event: LoggableEvent {
-        case finishStart
-        case finishSuccess(hex: String)
-        case finishFail(error: Error)
-
-        var eventName: String {
-            switch self {
-            case .finishStart:         return "OnboardingCompletedView_Finish_Start"
-            case .finishSuccess:       return "OnboardingCompletedView_Finish_Success"
-            case .finishFail:          return "OnboardingCompletedView_Finish_Fail"
-            }
-        }
-
-        var parameters: [String: Any]? {
-            switch self {
-            case .finishSuccess(hex: let hex):
-                return [
-                    "profile_color_hex": hex
-                ]
-            case .finishFail(error: let error):
-                return error.eventParameters
-            default:
-                return nil
-            }
-        }
-
-        var type: LogType {
-            switch self {
-            case .finishFail:
-                return .severe
-            default:
-                return .analytic
-            }
-        }
-    }
-
-    func onFinishButtonPressed() {
-        isCompletingProfileSetup = true
-        logManager.trackEvent(event: Event.finishStart)
-
-        Task {
-            do {
-                let hex = selectedColor.asHex()
-                try await userManager.markOnboardingCompleteForCurrentUser(profileColorHex: hex)
-                logManager.trackEvent(event: Event.finishSuccess(hex: hex))
-
-                // dismiss screen
-                isCompletingProfileSetup = false
-                root.updateViewState(showTabBarView: true)
-            } catch {
-                showAlert = AnyAppAlert(error: error)
-                logManager.trackEvent(event: Event.finishFail(error: error))
-            }
-        }
-    }
 }
 
 #Preview {
-    OnboardingCompletedView(selectedColor: .accent)
-        .environment(UserManager(services: MockUserServices()))
-        .environment(AppState())
+    OnboardingCompletedView(
+        viewModel: OnboardingCompletedViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)),
+        selectedColor: .mint
+    )
+    .previewEnvironment()
 }

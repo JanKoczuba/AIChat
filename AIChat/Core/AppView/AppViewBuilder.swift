@@ -4,7 +4,6 @@
 //
 //  Created by Jan Koczuba on 17/05/2025.
 //
-
 import SwiftUI
 
 struct AppViewBuilder<TabbarView: View, OnboardingView: View>: View {
@@ -21,9 +20,7 @@ struct AppViewBuilder<TabbarView: View, OnboardingView: View>: View {
             } else {
                 onboardingView
                     .transition(.move(edge: .leading))
-
             }
-
         }
         .animation(.smooth, value: showTabBar)
     }
@@ -49,7 +46,6 @@ private struct PreviewView: View {
                 }
             }
         )
-
         .onTapGesture {
             showTabBar.toggle()
         }
