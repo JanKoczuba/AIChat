@@ -9,41 +9,22 @@ import SwiftUI
 
 struct ProfileView: View {
 
-    @Environment(CoreBuilder.self) private var builder
-    @State var viewModel: ProfileViewModel
+    @State var presenter: ProfilePresenter
 
     var body: some View {
-        NavigationStack(path: $viewModel.path) {
-            List {
-                myInfoSection
-                myAvatarsSection
-            }
-            .navigationTitle("Profile")
-            .navigationDestinationForTabbarModule(path: $viewModel.path)
-            .showCustomAlert(alert: $viewModel.showAlert)
-            .screenAppearAnalytics(name: "ProfileView")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    settingsButton
-                }
+        List {
+            myInfoSection
+            myAvatarsSection
+        }
+        .navigationTitle("Profile")
+        .screenAppearAnalytics(name: "ProfileView")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                settingsButton
             }
         }
-        .sheet(isPresented: $viewModel.showSettingsView) {
-            builder.settingsView()
-        }
-        .fullScreenCover(
-            isPresented: $viewModel.showCreateAvatarView,
-            onDismiss: {
-                Task {
-                    await viewModel.loadData()
-                }
-            },
-            content: {
-                builder.createAvatarView()
-            }
-        )
         .task {
-            await viewModel.loadData()
+            await presenter.loadData()
         }
     }
             
@@ -51,7 +32,7 @@ struct ProfileView: View {
         Section {
             ZStack {
                 Circle()
-                    .fill(viewModel.currentUser?.profileColorCalculated ?? .accent)
+                    .fill(presenter.currentUser?.profileColorCalculated ?? .accent)
             }
             .frame(width: 100, height: 100)
             .frame(maxWidth: .infinity)
@@ -61,9 +42,9 @@ struct ProfileView: View {
     
     private var myAvatarsSection: some View {
         Section {
-            if viewModel.myAvatars.isEmpty {
+            if presenter.myAvatars.isEmpty {
                 Group {
-                    if viewModel.isLoading {
+                    if presenter.isLoading {
                         ProgressView()
                     } else {
                         Text("Click + to create an avatar")
@@ -75,19 +56,19 @@ struct ProfileView: View {
                 .foregroundStyle(.secondary)
                 .removeListRowFormatting()
             } else {
-                ForEach(viewModel.myAvatars, id: \.self) { avatar in
+                ForEach(presenter.myAvatars, id: \.self) { avatar in
                     CustomListCellView(
                         imageName: avatar.profileImageName,
                         title: avatar.name,
                         subtitle: nil
                     )
                     .anyButton(.highlight, action: {
-                        viewModel.onAvatarPressed(avatar: avatar)
+                        presenter.onAvatarPressed(avatar: avatar)
                     })
                     .removeListRowFormatting()
                 }
                 .onDelete { indexSet in
-                    viewModel.onDeleteAvatar(indexSet: indexSet)
+                    presenter.onDeleteAvatar(indexSet: indexSet)
                 }
             }
         } header: {
@@ -101,7 +82,7 @@ struct ProfileView: View {
                     .font(.title)
                     .foregroundStyle(.accent)
                     .anyButton {
-                        viewModel.onNewAvatarButtonPressed()
+                        presenter.onNewAvatarButtonPressed()
                     }
             }
         }
@@ -112,7 +93,7 @@ struct ProfileView: View {
             .font(.headline)
             .foregroundStyle(.accent)
             .anyButton {
-                viewModel.onSettingsButtonPressed()
+                presenter.onSettingsButtonPressed()
             }
     }
 
@@ -121,6 +102,8 @@ struct ProfileView: View {
 #Preview {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
     
-    return builder.profileView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.profileView(router: router)
+    }
+    .previewEnvironment()
 }

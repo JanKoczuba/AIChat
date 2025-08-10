@@ -1,29 +1,24 @@
 //
-//  OnboardingCommunityViewModel.swift
+//  OnboardingCommunityPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
 import SwiftUI
 
-@MainActor
-protocol OnboardingCommunityInteractor {
-    func trackEvent(event: LoggableEvent)
-}
-
-extension CoreInteractor: OnboardingCommunityInteractor { }
-
 @Observable
 @MainActor
-class OnboardingCommunityViewModel {
+class OnboardingCommunityPresenter {
     
     private let interactor: OnboardingCommunityInteractor
-    
-    init(interactor: OnboardingCommunityInteractor) {
+    private let router: OnboardingCommunityRouter
+
+    init(interactor: OnboardingCommunityInteractor, router: OnboardingCommunityRouter) {
         self.interactor = interactor
+        self.router = router
     }
     
-    func onContinueButtonPressed(path: Binding<[OnboardingPathOption]>) {
-        path.wrappedValue.append(.colorView)
+    func onContinueButtonPressed() {
+        router.showOnboardingColorView(delegate: OnboardingColorDelegate())
     }
 }

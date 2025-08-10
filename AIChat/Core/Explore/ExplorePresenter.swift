@@ -1,5 +1,5 @@
 //
-//  ExploreViewModel.swift
+//  ExplorePresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
@@ -7,27 +7,12 @@
 
 import SwiftUI
 
-@MainActor
-protocol ExploreInteractor {
-    var categoryRowTest: CategoryRowTestOption { get }
-    var createAccountTest: Bool { get }
-    var auth: UserAuthInfo? { get }
-
-    func trackEvent(event: LoggableEvent)
-    func schedulePushNotificationsForTheNextWeek()
-    func canRequestAuthorization() async -> Bool
-    func requestAuthorization() async throws -> Bool
-    func getFeaturedAvatars() async throws -> [AvatarModel]
-    func getPopularAvatars() async throws -> [AvatarModel]
-}
-
-extension CoreInteractor: ExploreInteractor { }
-
 @Observable
 @MainActor
-class ExploreViewModel {
+class ExplorePresenter {
     
     private let interactor: ExploreInteractor
+    private let router: ExploreRouter
 
     private(set) var featuredAvatars: [AvatarModel] = []
     private(set) var popularAvatars: [AvatarModel] = []
@@ -35,12 +20,7 @@ class ExploreViewModel {
     private(set) var isLoadingPopular: Bool = true
     private(set) var categories: [CharacterOption] = CharacterOption.allCases
     private(set) var showNotificationButton: Bool = false
-    
-    var showPushNotificationModal: Bool = false
-    var showCreateAccountView: Bool = false
-    var showDevSettings: Bool = false
-    var path: [TabbarPathOption] = []
-    
+        
     var showDevSettingsButton: Bool {
         #if DEV || MOCK
         return true
@@ -53,8 +33,9 @@ class ExploreViewModel {
         interactor.categoryRowTest
     }
 
-    init(interactor: ExploreInteractor) {
+    init(interactor: ExploreInteractor, router: ExploreRouter) {
         self.interactor = interactor
+        self.router = router
     }
     
     func handleDeepLink(url: URL) {
@@ -69,7 +50,10 @@ class ExploreViewModel {
         for queryItem in queryItems {
             if queryItem.name == "category", let value = queryItem.value, let category = CharacterOption(rawValue: value) {
                 let imageName = popularAvatars.first(where: { $0.characterOption == category })?.profileImageName ?? Constants.randomImage
-                path.append(.category(category: category, imageName: imageName))
+                
+                let delegate = CategoryListDelegate(category: category, imageName: imageName)
+                router.showCategoryListView(delegate: delegate)
+
                 interactor.trackEvent(event: Event.deeplinkCategory(category: category))
                 return
             }
@@ -95,7 +79,7 @@ class ExploreViewModel {
                 return
             }
             
-            showCreateAccountView = true
+            router.showCreateAccountView(delegate: CreateAccountDelegate(), onDisappear: nil)
         }
     }
     
@@ -104,28 +88,35 @@ class ExploreViewModel {
     }
     
     func onPushNotificationButtonPressed() {
-        showPushNotificationModal = true
-        interactor.trackEvent(event: Event.pushNotifsStart)
-    }
-    
-    func onEnablePushNotificationsPressed() {
-        showPushNotificationModal = false
-
-        Task {
-            let isAuthorized = try await interactor.requestAuthorization()
-            interactor.trackEvent(event: Event.pushNotifsEnable(isAuthorized: isAuthorized))
-            await handleShowPushNotificationButton()
+        func onEnablePushNotificationsPressed() {
+            router.dismissModal()
+            
+            Task {
+                let isAuthorized = try await interactor.requestAuthorization()
+                interactor.trackEvent(event: Event.pushNotifsEnable(isAuthorized: isAuthorized))
+                await handleShowPushNotificationButton()
+            }
         }
+        
+        func onCancelPushNotificationsPressed() {
+            router.dismissModal()
+            interactor.trackEvent(event: Event.pushNotifsCancel)
+        }
+        
+        interactor.trackEvent(event: Event.pushNotifsStart)
+        router.showPushNotificationModal(
+                onEnablePressed: {
+                    onEnablePushNotificationsPressed()
+                },
+                onCancelPressed: {
+                    onCancelPushNotificationsPressed()
+                }
+            )
     }
-    
-    func onCancelPushNotificationsPressed() {
-        showPushNotificationModal = false
-        interactor.trackEvent(event: Event.pushNotifsCancel)
-    }
-    
+        
     func onDevSettingsPressed() {
-        showDevSettings = true
         interactor.trackEvent(event: Event.devSettingsPressed)
+        router.showDevSettingsView()
     }
 
     func onTryAgainPressed() {
@@ -171,13 +162,17 @@ class ExploreViewModel {
     }
 
     func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chat(avatarId: avatar.avatarId, chat: nil))
         interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
+        
+        let delegate = ChatViewDelegate(chat: nil, avatarId: avatar.avatarId)
+        router.showChatView(delegate: delegate)
     }
 
     func onCategoryPressed(category: CharacterOption, imageName: String) {
-        path.append(.category(category: category, imageName: imageName))
         interactor.trackEvent(event: Event.categoryPressed(category: category))
+        
+        let delegate = CategoryListDelegate(category: category, imageName: imageName)
+        router.showCategoryListView(delegate: delegate)
     }
 
     enum Event: LoggableEvent {

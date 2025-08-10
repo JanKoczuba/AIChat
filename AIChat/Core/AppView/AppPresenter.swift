@@ -1,5 +1,5 @@
 //
-//  AppViewModel.swift
+//  AppPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
@@ -7,21 +7,9 @@
 import SwiftUI
 import SwiftfulUtilities
 
-@MainActor
-protocol AppViewInteractor {
-    var auth: UserAuthInfo? { get }
-    var showTabBar: Bool { get }
-
-    func trackEvent(event: LoggableEvent)
-    func logIn(user: UserAuthInfo, isNewUser: Bool) async throws
-    func signInAnonymously() async throws -> (user: UserAuthInfo, isNewUser: Bool)
-}
-
-extension CoreInteractor: AppViewInteractor { }
-
 @Observable
 @MainActor
-class AppViewModel {
+class AppPresenter {
     
     private let interactor: AppViewInteractor
     

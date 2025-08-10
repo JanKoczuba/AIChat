@@ -1,32 +1,23 @@
 //
-//  OnboardingCompletedViewModel.swift
+//  OnboardingCompletedPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
 import SwiftUI
 
-@MainActor
-protocol OnboardingCompletedInteractor {
-    func trackEvent(event: LoggableEvent)
-    func markOnboardingCompleteForCurrentUser(profileColorHex: String) async throws
-    func updateAppState(showTabBarView: Bool)
-}
-
-extension CoreInteractor: OnboardingCompletedInteractor { }
-
 @Observable
 @MainActor
-class OnboardingCompletedViewModel {
+class OnboardingCompletedPresenter {
     
     private let interactor: OnboardingCompletedInteractor
+    private let router: OnboardingCompletedRouter
     
     private(set) var isCompletingProfileSetup: Bool = false
-    
-    var showAlert: AnyAppAlert?
 
-    init(interactor: OnboardingCompletedInteractor) {
+    init(interactor: OnboardingCompletedInteractor, router: OnboardingCompletedRouter) {
         self.interactor = interactor
+        self.router = router
     }
         
     func onFinishButtonPressed(selectedColor: Color) {
@@ -45,7 +36,7 @@ class OnboardingCompletedViewModel {
                 // Show tabbar view
                 interactor.updateAppState(showTabBarView: true)
             } catch {
-                showAlert = AnyAppAlert(error: error)
+                router.showAlert(error: error)
                 interactor.trackEvent(event: Event.finishFail(error: error))
             }
         }

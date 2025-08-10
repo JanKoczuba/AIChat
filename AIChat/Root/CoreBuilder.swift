@@ -6,150 +6,192 @@
 //
 import SwiftUI
 
-@Observable
 @MainActor
-class CoreBuilder {
+struct CoreBuilder {
     let interactor: CoreInteractor
-    
-    init(interactor: CoreInteractor) {
-        self.interactor = interactor
-    }
     
     func appView() -> some View {
         AppView(
-            viewModel: AppViewModel(
+            presenter: AppPresenter(
                 interactor: interactor
-            )
+            ),
+            tabbarView: {
+                tabbarView()
+            },
+            onboardingView: {
+                welcomeView()
+            }
         )
     }
     
     func tabbarView() -> some View {
-        TabBarView()
+        TabBarView(
+            tabs: [
+                TabBarScreen(title: "Explore", systemImage: "eyes", screen: {
+                    RouterView { router in
+                        exploreView(router: router)
+                    }
+                    .any()
+                }),
+                TabBarScreen(title: "Chats", systemImage: "bubble.left.and.bubble.right.fill", screen: {
+                    RouterView { router in
+                        chatsView(router: router)
+                    }
+                    .any()
+                }),
+                TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
+                    RouterView { router in
+                        profileView(router: router)
+                    }
+                    .any()
+                })
+            ]
+        )
     }
     
     func welcomeView() -> some View {
-        WelcomeView(
-            viewModel: WelcomeViewModel(
-                interactor: interactor
+        RouterView { router in
+            WelcomeView(
+                presenter: WelcomePresenter(
+                    interactor: interactor,
+                    router: CoreRouter(router: router, builder: self)
+                )
             )
-        )
+        }
     }
     
-    func onboardingIntroView(delegate: OnboardingIntroDelegate) -> some View {
+    func onboardingIntroView(router: Router, delegate: OnboardingIntroDelegate) -> some View {
         OnboardingIntroView(
-            viewModel: OnboardingIntroViewModel(
-                interactor: interactor
+            presenter: OnboardingIntroPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate
         )
     }
     
-    func onboardingColorView(delegate: OnboardingColorDelegate) -> some View {
+    func onboardingColorView(router: Router, delegate: OnboardingColorDelegate) -> some View {
         OnboardingColorView(
-            viewModel: OnboardingColorViewModel(
-                interactor: interactor
+            presenter: OnboardingColorPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate
         )
     }
     
-    func onboardingCommunityView(delegate: OnboardingCommunityDelegate) -> some View {
+    func onboardingCommunityView(router: Router, delegate: OnboardingCommunityDelegate) -> some View {
         OnboardingCommunityView(
-            viewModel: OnboardingCommunityViewModel(
-                interactor: interactor
+            presenter: OnboardingCommunityPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate
         )
     }
     
-    func onboardingCompletedView(delegate: OnboardingCompletedDelegate) -> some View {
+    func onboardingCompletedView(router: Router, delegate: OnboardingCompletedDelegate) -> some View {
         OnboardingCompletedView(
-            viewModel: OnboardingCompletedViewModel(
-                interactor: interactor
+            presenter: OnboardingCompletedPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate
         )
     }
     
-    func createAccountView(delegate: CreateAccountDelegate = CreateAccountDelegate()) -> some View {
+    func createAccountView(router: Router, delegate: CreateAccountDelegate = CreateAccountDelegate()) -> some View {
         CreateAccountView(
-            viewModel: CreateAccountViewModel(
-                interactor: interactor
+            presenter: CreateAccountPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate
         )
     }
 
-    func exploreView() -> some View {
+    func exploreView(router: Router) -> some View {
         ExploreView(
-            viewModel: ExploreViewModel(
-                interactor: interactor
+            presenter: ExplorePresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             )
         )
     }
     
-    func categoryListView(delegate: CategoryListDelegate) -> some View {
+    func categoryListView(router: Router, delegate: CategoryListDelegate) -> some View {
         CategoryListView(
-            viewModel: CategoryListViewModel(
-                interactor: interactor
+            presenter: CategoryListPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate
         )
     }
     
-    func chatsView() -> some View {
+    func chatsView(router: Router) -> some View {
         ChatsView(
-            viewModel: ChatsViewModel(
-                interactor: interactor
-            )
+            presenter: ChatsPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
+            chatRowCell: { delegate in
+                chatRowCell(delegate: delegate)
+            }
         )
     }
     
-    func chatView(delegate: ChatViewDelegate = ChatViewDelegate()) -> some View {
+    func chatView(router: Router, delegate: ChatViewDelegate = ChatViewDelegate()) -> some View {
         ChatView(
-            viewModel: ChatViewModel(
-                interactor: interactor
+            presenter: ChatPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate
         )
     }
     
-    func createAvatarView() -> some View {
+    func createAvatarView(router: Router) -> some View {
         CreateAvatarView(
-            viewModel: CreateAvatarViewModel(
-                interactor: interactor
+            presenter: CreateAvatarPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             )
         )
     }
         
-    func paywallView() -> some View {
+    func paywallView(router: Router) -> some View {
         PaywallView(
-            viewModel: PaywallViewModel(
-                interactor: interactor
+            presenter: PaywallPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             )
         )
     }
     
-    func profileView() -> some View {
+    func profileView(router: Router) -> some View {
         ProfileView(
-            viewModel: ProfileViewModel(
-                interactor: interactor
+            presenter: ProfilePresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             )
         )
     }
 
-    func settingsView() -> some View {
+    func settingsView(router: Router) -> some View {
         SettingsView(
-            viewModel: SettingsViewModel(
-                interactor: interactor
+            presenter: SettingsPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             )
         )
     }
         
-    func devSettingsView() -> some View {
+    func devSettingsView(router: Router) -> some View {
         DevSettingsView(
-            viewModel: DevSettingsViewModel(
-                interactor: interactor
+            presenter: DevSettingsPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
             )
         )
     }
@@ -158,7 +200,7 @@ class CoreBuilder {
     
     func chatRowCell(delegate: ChatRowCellDelegate = ChatRowCellDelegate()) -> some View {
         ChatRowCellViewBuilder(
-            viewModel: ChatRowCellViewModel(
+            presenter: ChatRowCellPresenter(
                 interactor: interactor
             ),
             delegate: delegate

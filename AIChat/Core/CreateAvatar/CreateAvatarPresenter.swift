@@ -1,27 +1,18 @@
 //
-//  CreateAvatarViewModel.swift
+//  CreateAvatarPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
 import SwiftUI
 
-@MainActor
-protocol CreateAvatarInteractor {
-    func trackEvent(event: LoggableEvent)
-    func getAuthId() throws -> String
-    func generateImage(input: String) async throws -> UIImage
-    func createAvatar(avatar: AvatarModel, image: UIImage) async throws
-}
-
-extension CoreInteractor: CreateAvatarInteractor { }
-
 @Observable
 @MainActor
-class CreateAvatarViewModel {
+class CreateAvatarPresenter {
     
     private let interactor: CreateAvatarInteractor
-        
+    private let router: CreateAvatarRouter
+
     private(set) var isGenerating: Bool = false
     private(set) var generatedImage: UIImage?
     private(set) var isSaving: Bool = false
@@ -29,16 +20,16 @@ class CreateAvatarViewModel {
     var characterOption: CharacterOption = .default
     var characterAction: CharacterAction = .default
     var characterLocation: CharacterLocation = .default
-    var showAlert: AnyAppAlert?
     var avatarName: String = ""
 
-    init(interactor: CreateAvatarInteractor) {
+    init(interactor: CreateAvatarInteractor, router: CreateAvatarRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
-    func onBackButtonPressed(onDismiss: () -> Void) {
+    func onBackButtonPressed() {
         interactor.trackEvent(event: Event.backButtonPressed)
-        onDismiss()
+        router.dismissScreen()
     }
     
     func onGenerateImagePressed() {
@@ -65,7 +56,7 @@ class CreateAvatarViewModel {
         }
     }
     
-    func onSavePressed(onDismiss: @escaping () -> Void) {
+    func onSavePressed() {
         interactor.trackEvent(event: Event.saveAvatarStart)
         guard let generatedImage else { return }
 
@@ -88,9 +79,9 @@ class CreateAvatarViewModel {
                 interactor.trackEvent(event: Event.saveAvatarSuccess(avatar: avatar))
 
                 // Dismiss screen
-                onDismiss()
+                router.dismissScreen()
             } catch {
-                showAlert = AnyAppAlert(error: error)
+                router.showAlert(error: error)
                 interactor.trackEvent(event: Event.saveAvatarFail(error: error))
             }
             

@@ -7,13 +7,11 @@
 import SwiftUI
 
 struct OnboardingCommunityDelegate {
-    var path: Binding<[OnboardingPathOption]>
 }
 
 struct OnboardingCommunityView: View {
     
-    @Environment(CoreBuilder.self) private var builder
-    @State var viewModel: OnboardingCommunityViewModel
+    @State var presenter: OnboardingCommunityPresenter
     let delegate: OnboardingCommunityDelegate
 
     var body: some View {
@@ -42,7 +40,7 @@ struct OnboardingCommunityView: View {
                 .callToActionButton()
                 .accessibilityIdentifier("OnboardingCommunityContinueButton")
                 .anyButton(.press) {
-                    viewModel.onContinueButtonPressed(path: delegate.path)
+                    presenter.onContinueButtonPressed()
                 }
         }
         .padding(24)
@@ -55,8 +53,8 @@ struct OnboardingCommunityView: View {
 #Preview {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
     
-    return NavigationStack {
-        builder.onboardingCommunityView(delegate: OnboardingCommunityDelegate(path: .constant([])))
+    return RouterView { router in
+        builder.onboardingCommunityView(router: router, delegate: OnboardingCommunityDelegate())
     }
     .previewEnvironment()
 }

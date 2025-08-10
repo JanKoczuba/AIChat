@@ -6,11 +6,11 @@
 //
 import SwiftUI
 
-struct AppView: View {
+struct AppView<TabbarView: View, OnboardingView: View>: View {
 
-    @State var viewModel: AppViewModel
-    @Environment(CoreBuilder.self) private var builder
-    @Environment(\.scenePhase) private var scenePhase
+    @State var presenter: AppPresenter
+    @ViewBuilder var tabbarView: () -> TabbarView
+    @ViewBuilder var onboardingView: () -> OnboardingView
 
     var body: some View {
         RootView(
@@ -18,7 +18,7 @@ struct AppView: View {
                 onApplicationDidAppear: nil,
                 onApplicationWillEnterForeground: { _ in
                     Task {
-                        await viewModel.checkUserStatus()
+                        await presenter.checkUserStatus()
                     }
                 },
                 onApplicationDidBecomeActive: nil,
@@ -28,25 +28,25 @@ struct AppView: View {
             ),
             content: {
                 AppViewBuilder(
-                    showTabBar: viewModel.showTabBar,
+                    showTabBar: presenter.showTabBar,
                     tabbarView: {
-                        builder.tabbarView()
+                        tabbarView()
                     },
                     onboardingView: {
-                        builder.welcomeView()
+                        onboardingView()
                     }
                 )
                 .task {
-                    await viewModel.checkUserStatus()
+                    await presenter.checkUserStatus()
                 }
                 .task {
                     try? await Task.sleep(for: .seconds(2))
-                    await viewModel.showATTPromptIfNeeded()
+                    await presenter.showATTPromptIfNeeded()
                 }
-                .onChange(of: viewModel.showTabBar) { _, showTabBar in
+                .onChange(of: presenter.showTabBar) { _, showTabBar in
                     if !showTabBar {
                         Task {
-                            await viewModel.checkUserStatus()
+                            await presenter.checkUserStatus()
                         }
                     }
                 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension View {
-
+    
     func callToActionButton() -> some View {
         self
             .font(.headline)
@@ -18,7 +18,7 @@ extension View {
             .background(.accent)
             .cornerRadius(16)
     }
-
+    
     func badgeButton() -> some View {
         self
             .font(.caption)
@@ -29,38 +29,27 @@ extension View {
             .background(Color.blue)
             .cornerRadius(6)
     }
-
+    
     func tappableBackground() -> some View {
         background(Color.black.opacity(0.001))
-
     }
-
+    
     func removeListRowFormatting() -> some View {
-        self.listRowInsets(
-            EdgeInsets.init(
-                top: 0,
-                leading: 0,
-                bottom: 0,
-                trailing: 0
-            )
-        )
-        .listRowBackground(Color.clear)
+        self
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+            .listRowBackground(Color.clear)
     }
-
+    
     func addingGradientBackgroundForText() -> some View {
         background(
-            LinearGradient(
-                colors: [
-                    Color.black.opacity(0),
-                    Color.black.opacity(0.3),
-                    Color.black.opacity(0.4)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            LinearGradient(colors: [
+                Color.black.opacity(0),
+                Color.black.opacity(0.3),
+                Color.black.opacity(0.4)
+            ], startPoint: .top, endPoint: .bottom)
         )
     }
-
+    
     @ViewBuilder
     func ifSatisfiedCondition(_ condition: Bool, transform: (Self) -> some View) -> some View {
         if condition {
@@ -70,4 +59,10 @@ extension View {
         }
     }
 
+}
+
+extension View {
+    func any() -> AnyView {
+        AnyView(self)
+    }
 }

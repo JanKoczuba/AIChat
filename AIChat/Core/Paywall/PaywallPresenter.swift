@@ -1,5 +1,5 @@
 //
-//  PaywallViewModel.swift
+//  PaywallPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
@@ -7,51 +7,39 @@
 import SwiftUI
 import StoreKit
 
-@MainActor
-protocol PaywallInteractor {
-    var paywallTest: PaywallTestOption { get }
-
-    func trackEvent(event: LoggableEvent)
-    func getProducts(productIds: [String]) async throws -> [AnyProduct]
-    func restorePurchase() async throws -> [PurchasedEntitlement]
-    func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement]
-}
-
-extension CoreInteractor: PaywallInteractor { }
-
 @Observable
 @MainActor
-class PaywallViewModel {
+class PaywallPresenter {
     
     private let interactor: PaywallInteractor
-    
+    private let router: PaywallRouter
+
     private(set) var products: [AnyProduct] = []
     private(set) var productIds: [String] = EntitlementOption.allProductIds
-    
-    var showAlert: AnyAppAlert?
     
     var paywallTest: PaywallTestOption {
         interactor.paywallTest
     }
 
-    init(interactor: PaywallInteractor) {
+    init(interactor: PaywallInteractor, router: PaywallRouter) {
         self.interactor = interactor
+        self.router = router
     }
     
     func onLoadProducts() async {
         do {
             products = try await interactor.getProducts(productIds: productIds)
         } catch {
-            showAlert = AnyAppAlert(error: error)
+            router.showAlert(error: error)
         }
     }
     
-    func onBackButtonPressed(onDismiss: () -> Void) {
+    func onBackButtonPressed() {
         interactor.trackEvent(event: Event.backButtonPressed)
-        onDismiss()
+        router.dismissScreen()
     }
     
-    func onRestorePurchasePressed(onDismiss: @escaping () -> Void) {
+    func onRestorePurchasePressed() {
         interactor.trackEvent(event: Event.restorePurchaseStart)
 
         Task {
@@ -59,15 +47,15 @@ class PaywallViewModel {
                 let entitlements = try await interactor.restorePurchase()
                 
                 if entitlements.hasActiveEntitlement {
-                    onDismiss()
+                    router.dismissScreen()
                 }
             } catch {
-                showAlert = AnyAppAlert(error: error)
+                router.showAlert(error: error)
             }
         }
     }
     
-    func onPurchaseProductPressed(product: AnyProduct, onDismiss: @escaping () -> Void) {
+    func onPurchaseProductPressed(product: AnyProduct) {
         interactor.trackEvent(event: Event.purchaseStart(product: product))
 
         Task {
@@ -76,11 +64,11 @@ class PaywallViewModel {
                 interactor.trackEvent(event: Event.purchaseSuccess(product: product))
 
                 if entitlements.hasActiveEntitlement {
-                    onDismiss()
+                    router.dismissScreen()
                 }
             } catch {
                 interactor.trackEvent(event: Event.purchaseFail(error: error))
-                showAlert = AnyAppAlert(error: error)
+                router.showAlert(error: error)
             }
         }
     }
@@ -90,7 +78,7 @@ class PaywallViewModel {
         interactor.trackEvent(event: Event.purchaseStart(product: product))
     }
     
-    func onPurchaseComplete(product: StoreKit.Product, result: Result<Product.PurchaseResult, any Error>, onDismiss: @escaping () -> Void) {
+    func onPurchaseComplete(product: StoreKit.Product, result: Result<Product.PurchaseResult, any Error>) {
         let product = AnyProduct(storeKitProduct: product)
 
         switch result {
@@ -98,7 +86,7 @@ class PaywallViewModel {
             switch value {
             case .success:
                 interactor.trackEvent(event: Event.purchaseSuccess(product: product))
-                onDismiss()
+                router.dismissScreen()
             case .pending:
                 interactor.trackEvent(event: Event.purchasePending(product: product))
             case .userCancelled:

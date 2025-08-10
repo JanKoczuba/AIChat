@@ -1,39 +1,30 @@
 //
-//  WelcomeViewModel.swift
+//  WelcomePresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
 import SwiftUI
 
-@MainActor
-protocol WelcomeInteractor {
-    func trackEvent(event: LoggableEvent)
-    func updateAppState(showTabBarView: Bool)
-}
-
-extension CoreInteractor: WelcomeInteractor { }
-
 @Observable
 @MainActor
-class WelcomeViewModel {
+class WelcomePresenter {
     
     private let interactor: WelcomeInteractor
-    
+    private let router: WelcomeRouter
+
     private(set) var imageName: String = Constants.randomImage
     
-    var showSignInView: Bool = false
-    var path: [OnboardingPathOption] = []
-
-    init(interactor: WelcomeInteractor) {
+    init(interactor: WelcomeInteractor, router: WelcomeRouter) {
         self.interactor = interactor
+        self.router = router
     }
     
     func onGetStartedPressed() {
-        path.append(.introView)
+        router.showOnboardingIntroView(delegate: OnboardingIntroDelegate())
     }
         
-    func handleDidSignIn(isNewUser: Bool) {
+    private func handleDidSignIn(isNewUser: Bool) {
         interactor.trackEvent(event: Event.didSignIn(isNewUser: isNewUser))
         
         if isNewUser {
@@ -44,9 +35,17 @@ class WelcomeViewModel {
         }
     }
     
-    func onSignInPresssed() {
-        showSignInView = true
+    func onSignInPressed() {
         interactor.trackEvent(event: Event.signInPressed)
+        
+        let delegate = CreateAccountDelegate(
+            title: "Sign in",
+            subtitle: "Connect to an existing account.",
+            onDidSignIn: { isNewUser in
+                self.handleDidSignIn(isNewUser: isNewUser)
+            }
+        )
+        router.showCreateAccountView(delegate: delegate, onDisappear: nil)
     }
 
     enum Event: LoggableEvent {

@@ -1,36 +1,25 @@
 //
-//  ChatsViewModel.swift
+//  ChatsPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
-
 import SwiftUI
-
-@MainActor
-protocol ChatsInteractor {
-    func trackEvent(event: LoggableEvent)
-    func getRecentAvatars() throws -> [AvatarModel]
-    func getAuthId() throws -> String
-    func getAllChats(userId: String) async throws -> [ChatModel]
-}
-
-extension CoreInteractor: ChatsInteractor { }
 
 @Observable
 @MainActor
-class ChatsViewModel {
+class ChatsPresenter {
     
     private let interactor: ChatsInteractor
-    
+    private let router: ChatsRouter
+
     private(set) var chats: [ChatModel] = []
     private(set) var isLoadingChats: Bool = true
     private(set) var recentAvatars: [AvatarModel] = []
-
-    var path: [TabbarPathOption] = []
     
-    init(interactor: ChatsInteractor) {
+    init(interactor: ChatsInteractor, router: ChatsRouter) {
         self.interactor = interactor
+        self.router = router
     }
     
     func loadRecentAvatars() {
@@ -60,13 +49,17 @@ class ChatsViewModel {
     }
 
     func onChatPressed(chat: ChatModel) {
-        path.append(.chat(avatarId: chat.avatarId, chat: chat))
         interactor.trackEvent(event: Event.chatPressed(chat: chat))
+        
+        let delegate = ChatViewDelegate(chat: chat, avatarId: chat.avatarId)
+        router.showChatView(delegate: delegate)
     }
     
     func onAvatarPressed(avatar: AvatarModel) {
-        path.append(.chat(avatarId: avatar.avatarId, chat: nil))
         interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
+        
+        let delegate = ChatViewDelegate(chat: nil, avatarId: avatar.avatarId)
+        router.showChatView(delegate: delegate)
     }
         
     enum Event: LoggableEvent {

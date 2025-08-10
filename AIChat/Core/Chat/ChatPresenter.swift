@@ -1,5 +1,5 @@
 //
-//  ChatViewModel.swift
+//  ChatPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
@@ -7,56 +7,28 @@
 
 import SwiftUI
 
-@MainActor
-protocol ChatInteractor {
-    var currentUser: UserModel? { get }
-    var auth: UserAuthInfo? { get }
-    var isPremium: Bool { get }
-
-    func getAuthId() throws -> String
-    func trackEvent(event: LoggableEvent)
-
-    // Avatar methods
-    func getAvatar(id: String) async throws -> AvatarModel
-    func addRecentAvatar(avatar: AvatarModel) async throws
-
-    // Chat methods
-    func getChat(userId: String, avatarId: String) async throws -> ChatModel?
-    func streamChatMessages(chatId: String) -> AsyncThrowingStream<[ChatMessageModel], Error>
-    func markChatMessageAsSeen(chatId: String, messageId: String, userId: String) async throws
-    func addChatMessage(chatId: String, message: ChatMessageModel) async throws
-    func createNewChat(chat: ChatModel) async throws
-    func reportChat(chatId: String, userId: String) async throws
-    func deleteChat(chatId: String) async throws
-
-    // AI Methods
-    func generateText(chats: [AIChatModel]) async throws -> AIChatModel
-}
-
-extension CoreInteractor: ChatInteractor { }
-
 @Observable
 @MainActor
-class ChatViewModel {
+class ChatPresenter {
     
     private let interactor: ChatInteractor
-    
+    private let router: ChatRouter
+
     private(set) var chatMessages: [ChatMessageModel] = []
     private(set) var avatar: AvatarModel?
     private(set) var currentUser: UserModel?
     private(set) var isGeneratingResponse: Bool = false
     private(set) var chat: ChatModel?
+    
     var textFieldText: String = ""
     var scrollPosition: String?
-    var showAlert: AnyAppAlert?
-    var showChatSettings: AnyAppAlert?
-    var showProfileModal: Bool = false
-    var showPaywall: Bool = false
 
-    init(interactor: ChatInteractor) {
+    init(interactor: ChatInteractor, router: ChatRouter) {
         self.interactor = interactor
+        self.router = router
     }
 
+    
     func onViewFirstAppear(chat: ChatModel?) {
         self.currentUser = interactor.currentUser
         self.chat = chat
@@ -157,7 +129,7 @@ class ChatViewModel {
                 // User is NOT premium
                 // Chat has >= 3 messages
                 if !interactor.isPremium && chatMessages.count >= 3 {
-                    showPaywall = true
+                    router.showPaywallView()
                     return
                 }
                 
@@ -209,7 +181,7 @@ class ChatViewModel {
                 try await interactor.addChatMessage(chatId: chat.id, message: newAIMessage)
                 interactor.trackEvent(event: Event.sendMessageResponseSent(chat: chat, avatar: avatar, message: newAIMessage))
             } catch {
-                showAlert = AnyAppAlert(error: error)
+                router.showAlert(error: error)
                 interactor.trackEvent(event: Event.sendMessageFail(error: error))
             }
             
@@ -235,10 +207,11 @@ class ChatViewModel {
         return newChat
     }
     
-    func onChatSettingsPressed(onDidDeleteChat: @escaping @MainActor () -> Void) {
+    func onChatSettingsPressed() {
         interactor.trackEvent(event: Event.chatSettingsPressed)
         
-        showChatSettings = AnyAppAlert(
+        router.showAlert(
+            .confirmationDialog,
             title: "",
             subtitle: "What would you like to do?",
             buttons: {
@@ -248,7 +221,7 @@ class ChatViewModel {
                             self.onReportChatPressed()
                         }
                         Button("Delete Chat", role: .destructive) {
-                            self.onDeleteChatPressed(onDidDeleteChat: onDidDeleteChat)
+                            self.onDeleteChatPressed()
                         }
                     }
                 )
@@ -266,22 +239,26 @@ class ChatViewModel {
                 try await interactor.reportChat(chatId: chatId, userId: uid)
                 interactor.trackEvent(event: Event.reportChatSuccess)
 
-                showAlert = AnyAppAlert(
+                router.showAlert(
+                    .alert,
                     title: "🚨 Reported 🚨",
-                    subtitle: "We will review the chat shortly. You may leave the chat at any time. Thanks for bringing this to our attention!"
+                    subtitle: "We will review the chat shortly. You may leave the chat at any time. Thanks for bringing this to our attention!",
+                    buttons: nil
                 )
             } catch {
                 interactor.trackEvent(event: Event.reportChatFail(error: error))
 
-                showAlert = AnyAppAlert(
+                router.showAlert(
+                    .alert,
                     title: "Something went wrong.",
-                    subtitle: "Please check your internet connection and try again."
+                    subtitle: "Please check your internet connection and try again.",
+                    buttons: nil
                 )
             }
         }
     }
     
-    func onDeleteChatPressed(onDidDeleteChat: @escaping @MainActor () -> Void) {
+    func onDeleteChatPressed() {
         interactor.trackEvent(event: Event.deleteChatStart)
 
         Task {
@@ -289,27 +266,27 @@ class ChatViewModel {
                 let chatId = try getChatId()
                 try await interactor.deleteChat(chatId: chatId)
                 interactor.trackEvent(event: Event.deleteChatSuccess)
-
-                onDidDeleteChat()
+                router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.deleteChatFail(error: error))
 
-                showAlert = AnyAppAlert(
+                router.showAlert(
+                    .alert,
                     title: "Something went wrong.",
-                    subtitle: "Please check your internet connection and try again."
+                    subtitle: "Please check your internet connection and try again.",
+                    buttons: nil
                 )
             }
         }
     }
     
     func onAvatarImagePressed() {
+        guard let avatar else { return }
         interactor.trackEvent(event: Event.avatarImagePressed(avatar: avatar))
 
-        showProfileModal = true
-    }
-    
-    func onProfileModalXmarkPressed() {
-        showProfileModal = false
+        router.showProfileModal(avatar: avatar, onXMarkPressed: {
+            self.router.dismissModal()
+        })
     }
     
     enum Event: LoggableEvent {

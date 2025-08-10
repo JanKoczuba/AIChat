@@ -1,5 +1,5 @@
 //
-//  DevSettingsInteractor.swift
+//  DevSettingsPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
@@ -8,24 +8,13 @@
 import SwiftUI
 import SwiftfulUtilities
 
-@MainActor
-protocol DevSettingsInteractor {
-    var activeTests: ActiveABTests { get }
-    var auth: UserAuthInfo? { get }
-    var currentUser: UserModel? { get }
-    
-    func trackEvent(event: LoggableEvent)
-    func override(updateTests: ActiveABTests) throws
-}
-
-extension CoreInteractor: DevSettingsInteractor { }
-
 @Observable
 @MainActor
-class DevSettingsViewModel {
+class DevSettingsPresenter {
     
     private let interactor: DevSettingsInteractor
-    
+    private let router: DevSettingsRouter
+
     var createAccountTest: Bool = false
     var onboardingCommunityTest: Bool = false
     var categoryRowTest: CategoryRowTestOption = .default
@@ -43,8 +32,9 @@ class DevSettingsViewModel {
         Utilities.eventParameters.asAlphabeticalArray
     }
 
-    init(interactor: DevSettingsInteractor) {
+    init(interactor: DevSettingsInteractor, router: DevSettingsRouter) {
         self.interactor = interactor
+        self.router = router
     }
     
     func loadABTests() {
@@ -115,8 +105,8 @@ class DevSettingsViewModel {
         }
     }
 
-    func onBackButtonPressed(onDismiss: () -> Void) {
-        onDismiss()
+    func onBackButtonPressed() {
+        router.dismissScreen()
     }
 
 }

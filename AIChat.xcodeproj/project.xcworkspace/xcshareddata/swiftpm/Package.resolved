@@ -1,5 +1,5 @@
 {
-  "originHash" : "a565180f72f33db738523d1d143a93f39dd2880fcfdd6f0b1eeeb85116095374",
+  "originHash" : "2e2da0426043e82fb9fb57a319bc4e64071a97a89296393548879b121d419f01",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "61b85103a1aeed8218f17c794687781505fbbef5",
         "version" : "11.2.0"
+      }
+    },
+    {
+      "identity" : "customrouting",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JanKoczuba/CustomRouting.git",
+      "state" : {
+        "revision" : "bbd89640771ad615a62f2e9cdb69196326b0388d",
+        "version" : "1.0.0"
       }
     },
     {

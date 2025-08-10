@@ -13,7 +13,7 @@ struct OnboardingCompletedDelegate {
 
 struct OnboardingCompletedView: View {
     
-    @State var viewModel: OnboardingCompletedViewModel
+    @State var presenter: OnboardingCompletedPresenter
     var delegate: OnboardingCompletedDelegate = OnboardingCompletedDelegate()
     
     var body: some View {
@@ -31,10 +31,10 @@ struct OnboardingCompletedView: View {
         .frame(maxHeight: .infinity)
         .safeAreaInset(edge: .bottom, content: {
             AsyncCallToActionButton(
-                isLoading: viewModel.isCompletingProfileSetup,
+                isLoading: presenter.isCompletingProfileSetup,
                 title: "Finish",
                 action: {
-                    viewModel.onFinishButtonPressed(selectedColor: delegate.selectedColor)
+                    presenter.onFinishButtonPressed(selectedColor: delegate.selectedColor)
                 }
             )
             .accessibilityIdentifier("FinishButton")
@@ -42,7 +42,6 @@ struct OnboardingCompletedView: View {
         .padding(24)
         .toolbar(.hidden, for: .navigationBar)
         .screenAppearAnalytics(name: "OnboardingCompletedView")
-        .showCustomAlert(alert: $viewModel.showAlert)
     }
     
 }
@@ -50,10 +49,13 @@ struct OnboardingCompletedView: View {
 #Preview {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
     
-    return builder.onboardingCompletedView(
-        delegate: OnboardingCompletedDelegate(
-            selectedColor: .mint
+    return RouterView { router in
+        builder.onboardingCompletedView(
+            router: router,
+            delegate: OnboardingCompletedDelegate(
+                selectedColor: .mint
+            )
         )
-    )
+    }
     .previewEnvironment()
 }

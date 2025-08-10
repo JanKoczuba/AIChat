@@ -1,31 +1,24 @@
 //
-//  CreateAccountViewModel.swift
+//  CreateAccountPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
 import SwiftUI
 
-@MainActor
-protocol CreateAccountInteractor {
-    func trackEvent(event: LoggableEvent)
-    func signInApple() async throws -> (user: UserAuthInfo, isNewUser: Bool)
-    func logIn(user: UserAuthInfo, isNewUser: Bool) async throws
-}
-
-extension CoreInteractor: CreateAccountInteractor { }
-
 @Observable
 @MainActor
-class CreateAccountViewModel {
+class CreateAccountPresenter {
     
     private let interactor: CreateAccountInteractor
-    
-    init(interactor: CreateAccountInteractor) {
+    private let router: CreateAccountRouter
+
+    init(interactor: CreateAccountInteractor, router: CreateAccountRouter) {
         self.interactor = interactor
+        self.router = router
     }
     
-    func onSignInApplePressed(onDidSignInSuccessfully: @escaping (_ isNewUser: Bool) -> Void) {
+    func onSignInApplePressed(delegate: CreateAccountDelegate) {
         interactor.trackEvent(event: Event.appleAuthStart)
         
         Task {
@@ -36,7 +29,8 @@ class CreateAccountViewModel {
                 try await interactor.logIn(user: result.user, isNewUser: result.isNewUser)
                 interactor.trackEvent(event: Event.appleAuthLoginSuccess(user: result.user, isNewUser: result.isNewUser))
 
-                onDidSignInSuccessfully(result.isNewUser)
+                delegate.onDidSignIn?(result.isNewUser)
+                router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.appleAuthFail(error: error))
             }

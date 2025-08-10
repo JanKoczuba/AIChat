@@ -1,52 +1,46 @@
 //
-//  CategoryListViewModel.swift
+//  CategoryListPresenter.swift
 //  AIChat
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
 import SwiftUI
 
-@MainActor
-protocol CategoryListInteractor {
-    func trackEvent(event: LoggableEvent)
-    func getAvatarsForCategory(category: CharacterOption) async throws -> [AvatarModel]
-}
-
-extension CoreInteractor: CategoryListInteractor { }
-
 @Observable
 @MainActor
-class CategoryListViewModel {
-
+class CategoryListPresenter {
+    
     private let interactor: CategoryListInteractor
+    private let router: CategoryListRouter
 
     private(set) var avatars: [AvatarModel] = []
     private(set) var isLoading: Bool = true
-
-    var showAlert: AnyAppAlert?
-
-    init(interactor: CategoryListInteractor) {
+    
+    init(interactor: CategoryListInteractor, router: CategoryListRouter) {
         self.interactor = interactor
+        self.router = router
     }
-
+    
     func loadAvatars(category: CharacterOption) async {
         interactor.trackEvent(event: Event.loadAvatarsStart)
         do {
             avatars = try await interactor.getAvatarsForCategory(category: category)
             interactor.trackEvent(event: Event.loadAvatarsSuccess)
         } catch {
-            showAlert = AnyAppAlert(error: error)
+            router.showAlert(error: error)
             interactor.trackEvent(event: Event.loadAvatarsFail(error: error))
         }
-
+        
         isLoading = false
     }
-
-    func onAvatarPressed(avatar: AvatarModel, path: Binding<[TabbarPathOption]>) {
-        path.wrappedValue.append(.chat(avatarId: avatar.avatarId, chat: nil))
+    
+    func onAvatarPressed(avatar: AvatarModel) {
         interactor.trackEvent(event: Event.avatarPressed(avatar: avatar))
+        
+        let delegate = ChatViewDelegate(chat: nil, avatarId: avatar.avatarId)
+        router.showChatView(delegate: delegate)
     }
-
+    
     enum Event: LoggableEvent {
         case loadAvatarsStart
         case loadAvatarsSuccess
@@ -61,7 +55,7 @@ class CategoryListViewModel {
             case .avatarPressed:             return "CategoryList_Avatar_Pressed"
             }
         }
-
+        
         var parameters: [String: Any]? {
             switch self {
             case .loadAvatarsFail(error: let error):
@@ -72,7 +66,7 @@ class CategoryListViewModel {
                 return nil
             }
         }
-
+        
         var type: LogType {
             switch self {
             case .loadAvatarsFail:

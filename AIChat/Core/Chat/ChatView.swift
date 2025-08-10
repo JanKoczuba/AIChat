@@ -14,9 +14,7 @@ struct ChatViewDelegate {
 
 struct ChatView: View {
     
-    @State var viewModel: ChatViewModel
-    @Environment(\.dismiss) private var dismiss
-    @Environment(CoreBuilder.self) private var builder
+    @State var presenter: ChatPresenter
     let delegate: ChatViewDelegate
 
     var body: some View {
@@ -24,66 +22,54 @@ struct ChatView: View {
             scrollViewSection
             textFieldSection
         }
-        .navigationTitle(viewModel.avatar?.name ?? "")
+        .navigationTitle(presenter.avatar?.name ?? "")
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 HStack {
-                    if viewModel.isGeneratingResponse {
+                    if presenter.isGeneratingResponse {
                         ProgressView()
                     }
                     
                     Image(systemName: "ellipsis")
                         .padding(8)
                         .anyButton {
-                            viewModel.onChatSettingsPressed(onDidDeleteChat: {
-                                dismiss()
-                            })
+                            presenter.onChatSettingsPressed()
                         }
                 }
             }
         }
         .screenAppearAnalytics(name: "ChatView")
-        .showCustomAlert(type: .confirmationDialog, alert: $viewModel.showChatSettings)
-        .showCustomAlert(alert: $viewModel.showAlert)
-        .showModal(showModal: $viewModel.showProfileModal) {
-            if let avatar = viewModel.avatar {
-                profileModal(avatar: avatar)
-            }
-        }
-        .sheet(isPresented: $viewModel.showPaywall, content: {
-            builder.paywallView()
-        })
         .task {
-            await viewModel.loadAvatar(avatarId: delegate.avatarId)
+            await presenter.loadAvatar(avatarId: delegate.avatarId)
         }
         .task {
-            await viewModel.loadChat(avatarId: delegate.avatarId)
-            await viewModel.listenForChatMessages()
+            await presenter.loadChat(avatarId: delegate.avatarId)
+            await presenter.listenForChatMessages()
         }
         .onFirstAppear {
-            viewModel.onViewFirstAppear(chat: delegate.chat)
+            presenter.onViewFirstAppear(chat: delegate.chat)
         }
     }
         
     private var scrollViewSection: some View {
         ScrollView {
             LazyVStack(spacing: 24) {
-                ForEach(viewModel.chatMessages) { message in
-                    if viewModel.messageIsDelayed(message: message) {
+                ForEach(presenter.chatMessages) { message in
+                    if presenter.messageIsDelayed(message: message) {
                         timestampView(date: message.dateCreatedCalculated)
                     }
 
-                    let isCurrentUser = viewModel.messageIsCurrentUser(message: message)
+                    let isCurrentUser = presenter.messageIsCurrentUser(message: message)
                     ChatBubbleViewBuilder(
                         message: message,
                         isCurrentUser: isCurrentUser,
-                        currentUserProfileColor: viewModel.currentUser?.profileColorCalculated ?? .accent,
-                        imageName: isCurrentUser ? nil : viewModel.avatar?.profileImageName,
-                        onImagePressed: viewModel.onAvatarImagePressed
+                        currentUserProfileColor: presenter.currentUser?.profileColorCalculated ?? .accent,
+                        imageName: isCurrentUser ? nil : presenter.avatar?.profileImageName,
+                        onImagePressed: presenter.onAvatarImagePressed
                     )
                     .onAppear {
-                        viewModel.onMessageDidAppear(message: message)
+                        presenter.onMessageDidAppear(message: message)
                     }
                     .id(message.id)
                 }
@@ -93,13 +79,13 @@ struct ChatView: View {
             .rotationEffect(.degrees(180))
         }
         .rotationEffect(.degrees(180))
-        .scrollPosition(id: $viewModel.scrollPosition, anchor: .center)
-        .animation(.default, value: viewModel.chatMessages.count)
-        .animation(.default, value: viewModel.scrollPosition)
+        .scrollPosition(id: $presenter.scrollPosition, anchor: .center)
+        .animation(.default, value: presenter.chatMessages.count)
+        .animation(.default, value: presenter.scrollPosition)
     }
         
     private var textFieldSection: some View {
-        TextField("Say something...", text: $viewModel.textFieldText)
+        TextField("Say something...", text: $presenter.textFieldText)
             .keyboardType(.alphabet)
             .autocorrectionDisabled()
             .padding(12)
@@ -111,7 +97,7 @@ struct ChatView: View {
                     .padding(.trailing, 4)
                     .foregroundStyle(.accent)
                     .anyButton(.plain, action: {
-                        viewModel.onSendMessagePressed(avatarId: delegate.avatarId)
+                        presenter.onSendMessagePressed(avatarId: delegate.avatarId)
                     })
                 
                 , alignment: .trailing
@@ -128,20 +114,6 @@ struct ChatView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(Color(uiColor: .secondarySystemBackground))
-    }
-        
-    private func profileModal(avatar: AvatarModel) -> some View {
-        ProfileModalView(
-            imageName: avatar.profileImageName,
-            title: avatar.name,
-            subtitle: avatar.characterOption?.rawValue.capitalized,
-            headline: avatar.characterDescription,
-            onXMarkPressed: {
-                viewModel.onProfileModalXmarkPressed()
-            }
-        )
-        .padding(40)
-        .transition(.slide)
     }
     
     private func timestampView(date: Date) -> some View {
@@ -163,8 +135,8 @@ struct ChatView: View {
 #Preview("Working chat - Not Premium") {
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
     
-    NavigationStack {
-        builder.chatView()
+    return RouterView { router in
+        builder.chatView(router: router)
             .previewEnvironment()
     }
 }
@@ -173,8 +145,8 @@ struct ChatView: View {
     container.register(PurchaseManager.self, service: PurchaseManager(service: MockPurchaseService(activeEntitlements: [.mock])))
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
 
-    return NavigationStack {
-        builder.chatView()
+    return RouterView { router in
+        builder.chatView(router: router)
             .previewEnvironment()
     }
 }
@@ -183,8 +155,8 @@ struct ChatView: View {
     container.register(AIManager.self, service: AIManager(service: MockAIService(delay: 20)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
 
-    return NavigationStack {
-        builder.chatView()
+    return RouterView { router in
+        builder.chatView(router: router)
             .previewEnvironment()
     }
 }
@@ -194,8 +166,8 @@ struct ChatView: View {
     container.register(PurchaseManager.self, service: PurchaseManager(service: MockPurchaseService(activeEntitlements: [.mock])))
     let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
 
-    return NavigationStack {
-        builder.chatView()
+    return RouterView { router in
+        builder.chatView(router: router)
             .previewEnvironment()
     }
 }

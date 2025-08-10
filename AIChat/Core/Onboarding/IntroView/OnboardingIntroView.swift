@@ -7,13 +7,11 @@
 import SwiftUI
 
 struct OnboardingIntroDelegate {
-    var path: Binding<[OnboardingPathOption]>
 }
 
 struct OnboardingIntroView: View {
     
-    @Environment(CoreBuilder.self) private var builder
-    @State var viewModel: OnboardingIntroViewModel
+    @State var presenter: OnboardingIntroPresenter
     let delegate: OnboardingIntroDelegate
     
     var body: some View {
@@ -41,7 +39,7 @@ struct OnboardingIntroView: View {
             Text("Continue")
                 .callToActionButton()
                 .anyButton(.press) {
-                    viewModel.onContinueButtonPressed(path: delegate.path)
+                    presenter.onContinueButtonPressed()
                 }
                 .accessibilityIdentifier("ContinueButton")
         }
@@ -56,8 +54,8 @@ struct OnboardingIntroView: View {
     let container = DevPreview.shared.container
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     
-    return NavigationStack {
-        builder.onboardingIntroView(delegate: OnboardingIntroDelegate(path: .constant([])))
+    return RouterView { router in
+        builder.onboardingIntroView(router: router, delegate: OnboardingIntroDelegate())
     }
     .previewEnvironment()
 }
@@ -67,8 +65,8 @@ struct OnboardingIntroView: View {
     container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(onboardingCommunityTest: true)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
-    return NavigationStack {
-        builder.onboardingIntroView(delegate: OnboardingIntroDelegate(path: .constant([])))
+    return RouterView { router in
+        builder.onboardingIntroView(router: router, delegate: OnboardingIntroDelegate())
     }
     .previewEnvironment()
 }

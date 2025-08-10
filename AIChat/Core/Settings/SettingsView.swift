@@ -8,11 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
-    
-    @Environment(\.dismiss) private var dismiss
-    
-    @State var viewModel: SettingsViewModel
-    @Environment(CoreBuilder.self) private var builder
+        
+    @State var presenter: SettingsPresenter
 
     var body: some View {
         NavigationStack {
@@ -24,59 +21,27 @@ struct SettingsView: View {
             .lineLimit(1)
             .minimumScaleFactor(0.4)
             .navigationTitle("Settings")
-            .sheet(isPresented: $viewModel.showCreateAccountView, onDismiss: {
-                viewModel.setAnonymousAccountStatus()
-            }, content: {
-                builder.createAccountView()
-                    .presentationDetents([.medium])
-            })
             .onAppear {
-                viewModel.setAnonymousAccountStatus()
+                presenter.setAnonymousAccountStatus()
             }
-            .showCustomAlert(alert: $viewModel.showAlert)
             .screenAppearAnalytics(name: "SettingsView")
-            .showModal(showModal: $viewModel.showRatingsModal) {
-                ratingsModal
-            }
         }
-    }
-    
-    private func dismissScreen() async {
-        dismiss()
-        try? await Task.sleep(for: .seconds(1))
-    }
-    
-    private var ratingsModal: some View {
-        CustomModalView(
-            title: "Are you enjoying AIChat?",
-            subtitle: "We'd love to hear your feedback!",
-            primaryButtonTitle: "Yes",
-            primaryButtonAction: {
-                viewModel.onEnjoyingAppYesPressed()
-            },
-            secondaryButtonTitle: "No",
-            secondaryButtonAction: {
-                viewModel.onEnjoyingAppNoPressed()
-            }
-        )
     }
     
     private var accountSection: some View {
         Section {
-            if viewModel.isAnonymousUser {
+            if presenter.isAnonymousUser {
                 Text("Save & back-up account")
                     .rowFormatting()
                     .anyButton(.highlight) {
-                        viewModel.onCreateAccountPressed()
+                        presenter.onCreateAccountPressed()
                     }
                     .removeListRowFormatting()
             } else {
                 Text("Sign out")
                     .rowFormatting()
                     .anyButton(.highlight) {
-                        viewModel.onSignOutPressed(onDismiss: {
-                            await dismissScreen()
-                        })
+                        presenter.onSignOutPressed()
                     }
                     .removeListRowFormatting()
             }
@@ -85,9 +50,7 @@ struct SettingsView: View {
                 .foregroundStyle(.red)
                 .rowFormatting()
                 .anyButton(.highlight) {
-                    viewModel.onDeleteAccountPressed(onDismiss: {
-                        await dismissScreen()
-                    })
+                    presenter.onDeleteAccountPressed()
                 }
                 .removeListRowFormatting()
         } header: {
@@ -96,7 +59,7 @@ struct SettingsView: View {
     }
     
     private var purchaseSection: some View {
-        let isPremium = viewModel.isPremium
+        let isPremium = presenter.isPremium
         
         return Section {
             HStack(spacing: 8) {
@@ -124,7 +87,7 @@ struct SettingsView: View {
                 .foregroundStyle(.blue)
                 .rowFormatting()
                 .anyButton(.highlight, action: {
-                    viewModel.onRatingsButtonPressed()
+                    presenter.onRatingsButtonPressed()
                 })
                 .removeListRowFormatting()
             
@@ -150,7 +113,7 @@ struct SettingsView: View {
                 .foregroundStyle(.blue)
                 .rowFormatting()
                 .anyButton(.highlight, action: {
-                    viewModel.onContactUsPressed()
+                    presenter.onContactUsPressed()
                 })
                 .removeListRowFormatting()
         } header: {
@@ -185,8 +148,10 @@ fileprivate extension View {
     container.register(UserManager.self, service: UserManager(services: MockUserServices(user: nil)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     
-    return builder.settingsView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.settingsView(router: router)
+    }
+    .previewEnvironment()
 }
 #Preview("Anonymous") {
     let container = DevPreview.shared.container
@@ -194,8 +159,10 @@ fileprivate extension View {
     container.register(UserManager.self, service: UserManager(services: MockUserServices(user: .mock)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     
-    return builder.settingsView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.settingsView(router: router)
+    }
+    .previewEnvironment()
 }
 #Preview("Not anonymous") {
     let container = DevPreview.shared.container
@@ -203,6 +170,8 @@ fileprivate extension View {
     container.register(UserManager.self, service: UserManager(services: MockUserServices(user: .mock)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     
-    return builder.settingsView()
-        .previewEnvironment()
+    return RouterView { router in
+        builder.settingsView(router: router)
+    }
+    .previewEnvironment()
 }
