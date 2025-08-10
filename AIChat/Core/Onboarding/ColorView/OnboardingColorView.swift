@@ -7,12 +7,16 @@
 
 import SwiftUI
 
+struct OnboardingColorDelegate {
+    var path: Binding<[OnboardingPathOption]>
+}
+
 struct OnboardingColorView: View {
-
-    @Environment(DependencyContainer.self) private var container
+    
+    @Environment(CoreBuilder.self) private var builder
     @State var viewModel: OnboardingColorViewModel
-    @Binding var path: [OnboardingPathOption]
-
+    let delegate: OnboardingColorDelegate
+    
     var body: some View {
         ScrollView {
             colorGrid
@@ -32,7 +36,7 @@ struct OnboardingColorView: View {
         .toolbar(.hidden, for: .navigationBar)
         .screenAppearAnalytics(name: "OnboardingColorView")
     }
-
+    
     private var colorGrid: some View {
         LazyVGrid(
             columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3),
@@ -63,20 +67,22 @@ struct OnboardingColorView: View {
             }
         )
     }
-
+    
     private func ctaButton(selectedColor: Color) -> some View {
         Text("Continue")
             .callToActionButton()
             .anyButton(.press, action: {
-                viewModel.onContinuePressed(path: $path)
+                viewModel.onContinuePressed(path: delegate.path)
             })
             .accessibilityIdentifier("ContinueButton")
     }
 }
 
 #Preview {
-    NavigationStack {
-        OnboardingColorView(viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)), path: .constant([]))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    
+    return NavigationStack {
+        builder.onboardingColorView(delegate: OnboardingColorDelegate(path: .constant([])))
     }
     .previewEnvironment()
 }

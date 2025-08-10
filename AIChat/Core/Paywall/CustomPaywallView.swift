@@ -5,24 +5,25 @@
 //  Created by Jan Koczuba on 02/08/2025.
 //
 
+
 import SwiftUI
 
 struct CustomPaywallView: View {
-
+    
     var products: [AnyProduct] = []
     var title: String = "Try Premium Today!"
     var subtitle: String = "Unlock unlimited access and exclusive features for premium members."
     var onBackButtonPressed: () -> Void = { }
     var onRestorePurchasePressed: () -> Void = { }
     var onPurchaseProductPressed: (AnyProduct) -> Void = { _ in }
-
+    
     var body: some View {
         ZStack {
             Color.blue.ignoresSafeArea()
-
+            
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
-
+                
                 VStack(spacing: 24) {
                     Text(title)
                         .font(.largeTitle)
@@ -32,12 +33,12 @@ struct CustomPaywallView: View {
                 }
                 .foregroundStyle(.white)
                 .padding(40)
-
+                
                 VStack(spacing: 8) {
                     ForEach(products) { product in
                         productRow(product: product)
                     }
-
+                    
                     Text("Already have a subscription?\nRestore Purchase")
                         .font(.callout)
                         .fontWeight(.medium)
@@ -48,7 +49,7 @@ struct CustomPaywallView: View {
                         }
                         .padding(16)
                 }
-
+                
                 Spacer(minLength: 0)
                 Spacer(minLength: 0)
             }
@@ -64,11 +65,11 @@ struct CustomPaywallView: View {
                     onBackButtonPressed()
                 })
                 .padding(16)
-
+            
             , alignment: .topLeading
         )
     }
-
+    
     private func productRow(product: AnyProduct) -> some View {
         VStack(alignment: .leading) {
             HStack(spacing: 0) {
@@ -97,7 +98,7 @@ struct CustomPaywallView: View {
         })
         .padding(16)
     }
-
+    
 }
 
 #Preview {

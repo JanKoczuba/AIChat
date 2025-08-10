@@ -4,7 +4,6 @@
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
-
 import SwiftUI
 import Foundation
 
@@ -17,7 +16,7 @@ enum OnboardingPathOption: Hashable {
 
 struct NavDestForOnboardingModuleViewModifier: ViewModifier {
     
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     let path: Binding<[OnboardingPathOption]>
     
     func body(content: Content) -> some View {
@@ -25,13 +24,13 @@ struct NavDestForOnboardingModuleViewModifier: ViewModifier {
             .navigationDestination(for: OnboardingPathOption.self) { newValue in
                 switch newValue {
                 case .colorView:
-                    OnboardingColorView(viewModel: OnboardingColorViewModel(interactor: CoreInteractor(container: container)), path: path)
+                    builder.onboardingColorView(delegate: OnboardingColorDelegate(path: path))
                 case .communityView:
-                    OnboardingCommunityView(viewModel: OnboardingCommunityViewModel(interactor: CoreInteractor(container: container)), path: path)
+                    builder.onboardingCommunityView(delegate: OnboardingCommunityDelegate(path: path))
                 case .introView:
-                    OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)), path: path)
+                    builder.onboardingIntroView(delegate: OnboardingIntroDelegate(path: path))
                 case .completedView(selectedColor: let selectedColor):
-                    OnboardingCompletedView(viewModel: OnboardingCompletedViewModel(interactor: CoreInteractor(container: container)), selectedColor: selectedColor)
+                    builder.onboardingCompletedView(delegate: OnboardingCompletedDelegate(selectedColor: selectedColor))
                 }
             }
     }

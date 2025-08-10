@@ -4,15 +4,18 @@
 //
 //  Created by Jan Koczuba on 18/05/2025.
 //
-
 import SwiftUI
 
+struct OnboardingIntroDelegate {
+    var path: Binding<[OnboardingPathOption]>
+}
+
 struct OnboardingIntroView: View {
-
-    @Environment(DependencyContainer.self) private var container
+    
+    @Environment(CoreBuilder.self) private var builder
     @State var viewModel: OnboardingIntroViewModel
-    @Binding var path: [OnboardingPathOption]
-
+    let delegate: OnboardingIntroDelegate
+    
     var body: some View {
         VStack {
             Group {
@@ -38,7 +41,7 @@ struct OnboardingIntroView: View {
             Text("Continue")
                 .callToActionButton()
                 .anyButton(.press) {
-                    viewModel.onContinueButtonPressed(path: $path)
+                    viewModel.onContinueButtonPressed(path: delegate.path)
                 }
                 .accessibilityIdentifier("ContinueButton")
         }
@@ -51,9 +54,10 @@ struct OnboardingIntroView: View {
 
 #Preview("Original") {
     let container = DevPreview.shared.container
-
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    
     return NavigationStack {
-        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
+        builder.onboardingIntroView(delegate: OnboardingIntroDelegate(path: .constant([])))
     }
     .previewEnvironment()
 }
@@ -61,9 +65,10 @@ struct OnboardingIntroView: View {
 #Preview("Onb Comm Test") {
     let container = DevPreview.shared.container
     container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(onboardingCommunityTest: true)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
     return NavigationStack {
-        OnboardingIntroView(viewModel: OnboardingIntroViewModel(interactor: CoreInteractor(container: container)), path: .constant([]))
+        builder.onboardingIntroView(delegate: OnboardingIntroDelegate(path: .constant([])))
     }
     .previewEnvironment()
 }

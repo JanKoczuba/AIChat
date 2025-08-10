@@ -7,11 +7,15 @@
 
 import SwiftUI
 
-struct ChatRowCellViewBuilder: View {
-
-    @State var viewModel: ChatRowCellViewModel
+struct ChatRowCellDelegate {
     var chat: ChatModel = .mock
+}
 
+struct ChatRowCellViewBuilder: View {
+    
+    @State var viewModel: ChatRowCellViewModel
+    let delegate: ChatRowCellDelegate
+    
     var body: some View {
         ChatRowCellView(
             imageName: viewModel.avatar?.profileImageName,
@@ -21,24 +25,21 @@ struct ChatRowCellViewBuilder: View {
         )
         .redacted(reason: viewModel.isLoading ? .placeholder : [])
         .task {
-            await viewModel.loadAvatar(chat: chat)
+            await viewModel.loadAvatar(chat: delegate.chat)
         }
         .task {
-            await viewModel.loadLastChatMessage(chat: chat)
+            await viewModel.loadLastChatMessage(chat: delegate.chat)
         }
     }
-
+    
 }
 
 #Preview {
-    VStack {
-        ChatRowCellViewBuilder(
-            viewModel: ChatRowCellViewModel(
-                interactor: CoreInteractor(container: DevPreview.shared.container)
-            ),
-            chat: .mock
-        )
-
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    
+    return VStack {
+        builder.chatRowCell()
+        
         ChatRowCellViewBuilder(
             viewModel: ChatRowCellViewModel(
                 interactor: AnyChatRowCellInteractor(
@@ -52,21 +53,21 @@ struct ChatRowCellViewBuilder: View {
                     }
                 )
             ),
-            chat: .mock
+            delegate: ChatRowCellDelegate()
         )
-
+        
         ChatRowCellViewBuilder(
             viewModel: ChatRowCellViewModel(
                 interactor: AnyChatRowCellInteractor(
                     getAvatar: { _ in
-                            .mock
+                        .mock
                     },
                     getLastChatMessage: { _ in
-                            .mock
+                        .mock
                     }
                 )
             ),
-            chat: .mock
+            delegate: ChatRowCellDelegate()
         )
 
         ChatRowCellViewBuilder(
@@ -80,7 +81,7 @@ struct ChatRowCellViewBuilder: View {
                     }
                 )
             ),
-            chat: .mock
+            delegate: ChatRowCellDelegate()
         )
     }
 }

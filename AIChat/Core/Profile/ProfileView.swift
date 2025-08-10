@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
 
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     @State var viewModel: ProfileViewModel
 
     var body: some View {
@@ -29,7 +29,7 @@ struct ProfileView: View {
             }
         }
         .sheet(isPresented: $viewModel.showSettingsView) {
-            SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
+            builder.settingsView()
         }
         .fullScreenCover(
             isPresented: $viewModel.showCreateAvatarView,
@@ -39,14 +39,14 @@ struct ProfileView: View {
                 }
             },
             content: {
-                CreateAvatarView(viewModel: CreateAvatarViewModel(interactor: CoreInteractor(container: container)))
+                builder.createAvatarView()
             }
         )
         .task {
             await viewModel.loadData()
         }
     }
-
+            
     private var myInfoSection: some View {
         Section {
             ZStack {
@@ -58,7 +58,7 @@ struct ProfileView: View {
             .removeListRowFormatting()
         }
     }
-
+    
     private var myAvatarsSection: some View {
         Section {
             if viewModel.myAvatars.isEmpty {
@@ -96,7 +96,7 @@ struct ProfileView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                 Spacer()
-
+                
                 Image(systemName: "plus.circle.fill")
                     .font(.title)
                     .foregroundStyle(.accent)
@@ -119,8 +119,8 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(
-        viewModel: ProfileViewModel(interactor: CoreInteractor(container: DevPreview.shared.container))
-    )
-    .previewEnvironment()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    
+    return builder.profileView()
+        .previewEnvironment()
 }

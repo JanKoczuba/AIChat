@@ -4,12 +4,12 @@
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
-
 import SwiftUI
 import Firebase
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     var dependencies: Dependencies!
+    var builder: CoreBuilder!
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         
@@ -30,8 +30,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         
         config.configure()
         dependencies = Dependencies(config: config)
+        builder = CoreBuilder(interactor: CoreInteractor(container: dependencies.container))
         return true
-    }    
+    }
 }
 
 enum BuildConfiguration {

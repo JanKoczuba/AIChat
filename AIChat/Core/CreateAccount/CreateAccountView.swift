@@ -58,7 +58,8 @@ struct CreateAccountView: View {
 }
 
 #Preview {
-    CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+    CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+        .createAccountView()
         .previewEnvironment()
         .frame(maxHeight: 400)
         .frame(maxHeight: .infinity, alignment: .bottom)

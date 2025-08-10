@@ -6,11 +6,15 @@
 //
 import SwiftUI
 
-struct OnboardingCommunityView: View {
+struct OnboardingCommunityDelegate {
+    var path: Binding<[OnboardingPathOption]>
+}
 
-    @Environment(DependencyContainer.self) private var container
+struct OnboardingCommunityView: View {
+    
+    @Environment(CoreBuilder.self) private var builder
     @State var viewModel: OnboardingCommunityViewModel
-    @Binding var path: [OnboardingPathOption]
+    let delegate: OnboardingCommunityDelegate
 
     var body: some View {
         VStack {
@@ -18,7 +22,7 @@ struct OnboardingCommunityView: View {
                 ImageLoaderView()
                     .frame(width: 150, height: 150)
                     .clipShape(Circle())
-
+                
                 Group {
                     Text("Join our community with over ")
                     +
@@ -38,7 +42,7 @@ struct OnboardingCommunityView: View {
                 .callToActionButton()
                 .accessibilityIdentifier("OnboardingCommunityContinueButton")
                 .anyButton(.press) {
-                    viewModel.onContinueButtonPressed(path: $path)
+                    viewModel.onContinueButtonPressed(path: delegate.path)
                 }
         }
         .padding(24)
@@ -49,8 +53,10 @@ struct OnboardingCommunityView: View {
 }
 
 #Preview {
-    NavigationStack {
-        OnboardingCommunityView(viewModel: OnboardingCommunityViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)), path: .constant([]))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    
+    return NavigationStack {
+        builder.onboardingCommunityView(delegate: OnboardingCommunityDelegate(path: .constant([])))
     }
     .previewEnvironment()
 }

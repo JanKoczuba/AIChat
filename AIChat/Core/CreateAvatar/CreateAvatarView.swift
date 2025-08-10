@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CreateAvatarView: View {
-
+    
     @Environment(\.dismiss) private var dismiss
     @State var viewModel: CreateAvatarViewModel
 
@@ -30,7 +30,7 @@ struct CreateAvatarView: View {
             .screenAppearAnalytics(name: "CreateAvatar")
         }
     }
-
+    
     private var backButton: some View {
         Image(systemName: "xmark")
             .font(.title2)
@@ -41,7 +41,7 @@ struct CreateAvatarView: View {
                 })
             }
     }
-
+    
     private var nameSection: some View {
         Section {
             TextField("Player 1", text: $viewModel.avatarName)
@@ -51,7 +51,7 @@ struct CreateAvatarView: View {
                 .minimumScaleFactor(0.3)
         }
     }
-
+    
     private var attributesSection: some View {
         Section {
             Picker(selection: $viewModel.characterOption) {
@@ -71,7 +71,7 @@ struct CreateAvatarView: View {
             } label: {
                 Text("that is...")
             }
-
+            
             Picker(selection: $viewModel.characterLocation) {
                 ForEach(CharacterLocation.allCases, id: \.self) { option in
                     Text(option.rawValue.capitalized)
@@ -86,7 +86,7 @@ struct CreateAvatarView: View {
                 .minimumScaleFactor(0.3)
         }
     }
-
+    
     private var imageSection: some View {
         Section {
             HStack(alignment: .top, spacing: 8) {
@@ -106,7 +106,7 @@ struct CreateAvatarView: View {
                         .opacity(viewModel.isGenerating ? 1 : 0)
                 }
                 .disabled(viewModel.isGenerating || viewModel.avatarName.isEmpty)
-
+                
                 Circle()
                     .fill(Color.secondary.opacity(0.3))
                     .overlay(
@@ -124,7 +124,7 @@ struct CreateAvatarView: View {
             .removeListRowFormatting()
         }
     }
-
+    
     private var saveSection: some View {
         Section {
             AsyncCallToActionButton(
@@ -144,14 +144,11 @@ struct CreateAvatarView: View {
             .frame(maxWidth: .infinity)
         }
     }
-
+    
 }
 
 #Preview {
-    CreateAvatarView(
-        viewModel: CreateAvatarViewModel(
-            interactor: CoreInteractor(container: DevPreview.shared.container)
-        )
-    )
-    .previewEnvironment()
+    CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+        .createAvatarView()
+        .previewEnvironment()
 }

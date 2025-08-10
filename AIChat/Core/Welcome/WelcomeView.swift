@@ -50,7 +50,7 @@ struct WelcomeView: View {
                 .fontWeight(.semibold)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
- 
+       
         }
     }
     
@@ -99,6 +99,8 @@ struct WelcomeView: View {
 }
 
 #Preview {
-    WelcomeView(viewModel: WelcomeViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    
+    return builder.welcomeView()
         .previewEnvironment()
 }

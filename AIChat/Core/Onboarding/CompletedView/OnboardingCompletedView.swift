@@ -7,17 +7,21 @@
 
 import SwiftUI
 
-struct OnboardingCompletedView: View {
-
-    @State var viewModel: OnboardingCompletedViewModel
+struct OnboardingCompletedDelegate {
     var selectedColor: Color = .orange
+}
 
+struct OnboardingCompletedView: View {
+    
+    @State var viewModel: OnboardingCompletedViewModel
+    var delegate: OnboardingCompletedDelegate = OnboardingCompletedDelegate()
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Setup complete!")
                 .font(.largeTitle)
                 .fontWeight(.semibold)
-                .foregroundStyle(selectedColor)
+                .foregroundStyle(delegate.selectedColor)
 
             Text("We've set up your profile and you're ready to start chatting.")
                 .font(.title)
@@ -30,7 +34,7 @@ struct OnboardingCompletedView: View {
                 isLoading: viewModel.isCompletingProfileSetup,
                 title: "Finish",
                 action: {
-                    viewModel.onFinishButtonPressed(selectedColor: selectedColor)
+                    viewModel.onFinishButtonPressed(selectedColor: delegate.selectedColor)
                 }
             )
             .accessibilityIdentifier("FinishButton")
@@ -40,13 +44,16 @@ struct OnboardingCompletedView: View {
         .screenAppearAnalytics(name: "OnboardingCompletedView")
         .showCustomAlert(alert: $viewModel.showAlert)
     }
-
+    
 }
 
 #Preview {
-    OnboardingCompletedView(
-        viewModel: OnboardingCompletedViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)),
-        selectedColor: .mint
+    let builder = CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+    
+    return builder.onboardingCompletedView(
+        delegate: OnboardingCompletedDelegate(
+            selectedColor: .mint
+        )
     )
     .previewEnvironment()
 }

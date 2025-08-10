@@ -4,27 +4,29 @@
 //
 //  Created by Jan Koczuba on 18/06/2025.
 //
-
 import SwiftUI
+
+struct CategoryListDelegate {
+    var path: Binding<[TabbarPathOption]>
+    var category: CharacterOption = .alien
+    var imageName: String = Constants.randomImage
+}
 
 struct CategoryListView: View {
 
     @State var viewModel: CategoryListViewModel
-
-    @Binding var path: [TabbarPathOption]
-    var category: CharacterOption = .alien
-    var imageName: String = Constants.randomImage
-
+    let delegate: CategoryListDelegate
+    
     var body: some View {
         List {
             CategoryCellView(
-                title: category.plural.capitalized,
-                imageName: imageName,
+                title: delegate.category.plural.capitalized,
+                imageName: delegate.imageName,
                 font: .largeTitle,
                 cornerRadius: 0
             )
             .removeListRowFormatting()
-
+            
             if viewModel.isLoading {
                 ProgressView()
                     .padding(40)
@@ -46,7 +48,7 @@ struct CategoryListView: View {
                         subtitle: avatar.characterDescription
                     )
                     .anyButton(.highlight, action: {
-                        viewModel.onAvatarPressed(avatar: avatar, path: $path)
+                        viewModel.onAvatarPressed(avatar: avatar, path: delegate.path)
                     })
                     .removeListRowFormatting()
                 }
@@ -57,49 +59,45 @@ struct CategoryListView: View {
         .ignoresSafeArea()
         .listStyle(PlainListStyle())
         .task {
-            await viewModel.loadAvatars(category: category)
+            await viewModel.loadAvatars(category: delegate.category)
         }
     }
-
+        
 }
 
 #Preview("Has data") {
     let container = DevPreview.shared.container
     container.register(AvatarManager.self, service: AvatarManager(service: MockAvatarService()))
-
-    return CategoryListView(
-        viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)),
-        path: .constant([])
-    )
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = CategoryListDelegate(path: .constant([]))
+    
+    return builder.categoryListView(delegate: delegate)
     .previewEnvironment()
 }
 #Preview("No data") {
     let container = DevPreview.shared.container
     container.register(AvatarManager.self, service: AvatarManager(service: MockAvatarService(avatars: [])))
-
-    return CategoryListView(
-        viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)),
-        path: .constant([])
-    )
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = CategoryListDelegate(path: .constant([]))
+    
+    return builder.categoryListView(delegate: delegate)
     .previewEnvironment()
 }
 #Preview("Slow loading") {
     let container = DevPreview.shared.container
     container.register(AvatarManager.self, service: AvatarManager(service: MockAvatarService(delay: 10)))
-
-    return CategoryListView(
-        viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)),
-        path: .constant([])
-    )
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = CategoryListDelegate(path: .constant([]))
+    
+    return builder.categoryListView(delegate: delegate)
     .previewEnvironment()
 }
 #Preview("Error loading") {
     let container = DevPreview.shared.container
     container.register(AvatarManager.self, service: AvatarManager(service: MockAvatarService(delay: 5, showError: true)))
-
-    return CategoryListView(
-        viewModel: CategoryListViewModel(interactor: CoreInteractor(container: container)),
-        path: .constant([])
-    )
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = CategoryListDelegate(path: .constant([]))
+    
+    return builder.categoryListView(delegate: delegate)
     .previewEnvironment()
 }

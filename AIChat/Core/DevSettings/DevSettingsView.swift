@@ -9,7 +9,6 @@ import SwiftUI
 struct DevSettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
-
     @State var viewModel: DevSettingsViewModel
 
     var body: some View {
@@ -32,7 +31,7 @@ struct DevSettingsView: View {
             }
         }
     }
-
+    
     private var backButtonView: some View {
         Image(systemName: "xmark")
             .font(.title2)
@@ -43,12 +42,12 @@ struct DevSettingsView: View {
                 })
             }
     }
-
+            
     private var abTestSection: some View {
         Section {
             Toggle("Create Account Test", isOn: $viewModel.createAccountTest)
                 .onChange(of: viewModel.createAccountTest, viewModel.handleCreateAccountChange)
-
+            
             Toggle("Onb Community Test", isOn: $viewModel.onboardingCommunityTest)
                 .onChange(of: viewModel.onboardingCommunityTest, viewModel.handleOnbCommunityChange)
 
@@ -72,7 +71,7 @@ struct DevSettingsView: View {
         }
         .font(.caption)
     }
-
+    
     private var authSection: some View {
         Section {
             ForEach(viewModel.authData, id: \.key) { item in
@@ -82,7 +81,7 @@ struct DevSettingsView: View {
             Text("Auth Info")
         }
     }
-
+    
     private var userSection: some View {
         Section {
             ForEach(viewModel.userData, id: \.key) { item in
@@ -92,7 +91,7 @@ struct DevSettingsView: View {
             Text("User Info")
         }
     }
-
+    
     private var deviceSection: some View {
         Section {
             ForEach(viewModel.utilitiesData, id: \.key) { item in
@@ -102,12 +101,12 @@ struct DevSettingsView: View {
             Text("Device Info")
         }
     }
-
+    
     private func itemRow(item: (key: String, value: Any)) -> some View {
         HStack {
             Text(item.key)
             Spacer(minLength: 4)
-
+            
             if let value = String.convertToString(item.value) {
                 Text(value)
             } else {
@@ -121,6 +120,7 @@ struct DevSettingsView: View {
 }
 
 #Preview {
-    DevSettingsView(viewModel: DevSettingsViewModel(interactor: CoreInteractor(container: DevPreview.shared.container)))
+    CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container))
+        .devSettingsView()
         .previewEnvironment()
 }

@@ -4,6 +4,7 @@
 //
 //  Created by Jan Koczuba on 17/05/2025.
 //
+
 import SwiftUI
 
 struct SettingsView: View {
@@ -11,7 +12,6 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State var viewModel: SettingsViewModel
-    @Environment(DependencyContainer.self) private var container
     @Environment(CoreBuilder.self) private var builder
 
     var body: some View {
@@ -155,7 +155,7 @@ struct SettingsView: View {
                 .removeListRowFormatting()
         } header: {
             Text("Application")
-        } 
+        }
     }
     
 }
@@ -183,23 +183,26 @@ fileprivate extension View {
     let container = DevPreview.shared.container
     container.register(AuthManager.self, service: AuthManager(service: MockAuthService(user: nil)))
     container.register(UserManager.self, service: UserManager(services: MockUserServices(user: nil)))
-
-    return SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    
+    return builder.settingsView()
         .previewEnvironment()
 }
 #Preview("Anonymous") {
     let container = DevPreview.shared.container
     container.register(AuthManager.self, service: AuthManager(service: MockAuthService(user: UserAuthInfo.mock(isAnonymous: true))))
     container.register(UserManager.self, service: UserManager(services: MockUserServices(user: .mock)))
-
-    return SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    
+    return builder.settingsView()
         .previewEnvironment()
 }
 #Preview("Not anonymous") {
     let container = DevPreview.shared.container
     container.register(AuthManager.self, service: AuthManager(service: MockAuthService(user: UserAuthInfo.mock(isAnonymous: false))))
     container.register(UserManager.self, service: UserManager(services: MockUserServices(user: .mock)))
-
-    return SettingsView(viewModel: SettingsViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    
+    return builder.settingsView()
         .previewEnvironment()
 }
