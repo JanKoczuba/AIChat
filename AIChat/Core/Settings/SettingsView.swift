@@ -4,15 +4,15 @@
 //
 //  Created by Jan Koczuba on 17/05/2025.
 //
-
 import SwiftUI
 
 struct SettingsView: View {
-
+    
     @Environment(\.dismiss) private var dismiss
-
+    
     @State var viewModel: SettingsViewModel
     @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
 
     var body: some View {
         NavigationStack {
@@ -27,7 +27,7 @@ struct SettingsView: View {
             .sheet(isPresented: $viewModel.showCreateAccountView, onDismiss: {
                 viewModel.setAnonymousAccountStatus()
             }, content: {
-                CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)))
+                builder.createAccountView()
                     .presentationDetents([.medium])
             })
             .onAppear {
@@ -40,12 +40,12 @@ struct SettingsView: View {
             }
         }
     }
-
+    
     private func dismissScreen() async {
         dismiss()
         try? await Task.sleep(for: .seconds(1))
     }
-
+    
     private var ratingsModal: some View {
         CustomModalView(
             title: "Are you enjoying AIChat?",
@@ -60,7 +60,7 @@ struct SettingsView: View {
             }
         )
     }
-
+    
     private var accountSection: some View {
         Section {
             if viewModel.isAnonymousUser {
@@ -80,7 +80,7 @@ struct SettingsView: View {
                     }
                     .removeListRowFormatting()
             }
-
+            
             Text("Delete account")
                 .foregroundStyle(.red)
                 .rowFormatting()
@@ -94,10 +94,10 @@ struct SettingsView: View {
             Text("Account")
         }
     }
-
+    
     private var purchaseSection: some View {
         let isPremium = viewModel.isPremium
-
+        
         return Section {
             HStack(spacing: 8) {
                 Text("Account status: \(isPremium ? "PREMIUM" : "FREE")")
@@ -117,7 +117,7 @@ struct SettingsView: View {
             Text("Purchases")
         }
     }
-
+    
     private var applicationSection: some View {
         Section {
             Text("Rate us on the App Store!")
@@ -127,7 +127,7 @@ struct SettingsView: View {
                     viewModel.onRatingsButtonPressed()
                 })
                 .removeListRowFormatting()
-
+            
             HStack(spacing: 8) {
                 Text("Version")
                 Spacer(minLength: 0)
@@ -136,7 +136,7 @@ struct SettingsView: View {
             }
             .rowFormatting()
             .removeListRowFormatting()
-
+            
             HStack(spacing: 8) {
                 Text("Build Number")
                 Spacer(minLength: 0)
@@ -145,7 +145,7 @@ struct SettingsView: View {
             }
             .rowFormatting()
             .removeListRowFormatting()
-
+            
             Text("Contact us")
                 .foregroundStyle(.blue)
                 .rowFormatting()
@@ -157,13 +157,13 @@ struct SettingsView: View {
             Text("Application")
         } 
     }
-
+    
 }
 
 private struct RowFormattingViewModifier: ViewModifier {
-
+    
     @Environment(\.colorScheme) private var colorScheme
-
+    
     func body(content: Content) -> some View {
         content
             .frame(maxWidth: .infinity, alignment: .leading)

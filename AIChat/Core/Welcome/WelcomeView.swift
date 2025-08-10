@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct WelcomeView: View {
-
-    @Environment(DependencyContainer.self) private var container
+    
+    @Environment(CoreBuilder.self) private var builder
     @State var viewModel: WelcomeViewModel
 
     var body: some View {
@@ -17,31 +17,32 @@ struct WelcomeView: View {
             VStack(spacing: 8) {
                 ImageLoaderView(urlString: viewModel.imageName)
                     .ignoresSafeArea()
-
+                
                 titleSection
                     .padding(.top, 24)
-
+                
                 ctaButtons
                     .padding(16)
-
+                
                 policyLinks
             }
             .navigationDestinationForOnboardingModule(path: $viewModel.path)
         }
         .screenAppearAnalytics(name: "WelcomeView")
         .sheet(isPresented: $viewModel.showSignInView) {
-            CreateAccountView(
-                viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)),
-                title: "Sign in",
-                subtitle: "Connect to an existing account.",
-                onDidSignIn: { isNewUser in
-                    viewModel.handleDidSignIn(isNewUser: isNewUser)
-                }
+            builder.createAccountView(
+                delegate: CreateAccountDelegate(
+                    title: "Sign in",
+                    subtitle: "Connect to an existing account.",
+                    onDidSignIn: { isNewUser in
+                        viewModel.handleDidSignIn(isNewUser: isNewUser)
+                    }
+                )
             )
             .presentationDetents([.medium])
         }
     }
-
+    
     private var titleSection: some View {
         VStack(spacing: 8) {
             Text("AI Chat 🤙")
@@ -49,9 +50,10 @@ struct WelcomeView: View {
                 .fontWeight(.semibold)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
+ 
         }
     }
-
+    
     private var ctaButtons: some View {
         VStack(spacing: 8) {
             Text("Get Started")
@@ -63,7 +65,7 @@ struct WelcomeView: View {
                 })
                 .accessibilityIdentifier("StartButton")
                 .frame(maxWidth: 500)
-
+            
             Text("Already have an account? Sign in!")
                 .underline()
                 .font(.body)
@@ -76,7 +78,7 @@ struct WelcomeView: View {
                 .minimumScaleFactor(0.3)
         }
     }
-
+        
     private var policyLinks: some View {
         HStack(spacing: 8) {
             Link(destination: URL(string: Constants.termsOfServiceUrl)!) {

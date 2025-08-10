@@ -6,30 +6,33 @@
 //
 import SwiftUI
 
-struct CreateAccountView: View {
-
-    @Environment(\.dismiss) private var dismiss
-    @State var viewModel: CreateAccountViewModel
-
+struct CreateAccountDelegate {
     var title: String = "Create Account?"
     var subtitle: String = "Don't lose your data! Connect to an SSO provider to save your account."
     var onDidSignIn: ((_ isNewUser: Bool) -> Void)?
+}
 
+struct CreateAccountView: View {
+    
+    @Environment(\.dismiss) private var dismiss
+    @State var viewModel: CreateAccountViewModel
+    var delegate: CreateAccountDelegate = CreateAccountDelegate()
+    
     var body: some View {
         VStack(spacing: 24) {
             VStack(alignment: .leading, spacing: 8) {
-                Text(title)
+                Text(delegate.title)
                     .font(.largeTitle)
                     .fontWeight(.semibold)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
-                Text(subtitle)
+                Text(delegate.subtitle)
                     .font(.body)
                     .lineLimit(4)
                     .minimumScaleFactor(0.5)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
+            
             SignInWithAppleButtonView(
                 type: .signIn,
                 style: .black,
@@ -39,19 +42,19 @@ struct CreateAccountView: View {
             .frame(maxWidth: 400)
             .anyButton(.press) {
                 viewModel.onSignInApplePressed(onDidSignInSuccessfully: { isNewUser in
-                    onDidSignIn?(isNewUser)
+                    delegate.onDidSignIn?(isNewUser)
                     dismiss()
                 })
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
+            
             Spacer()
         }
         .padding(16)
         .padding(.top, 40)
         .screenAppearAnalytics(name: "CreateAccountView")
     }
-
+    
 }
 
 #Preview {

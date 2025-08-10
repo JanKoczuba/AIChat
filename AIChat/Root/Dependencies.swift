@@ -4,7 +4,6 @@
 //
 //  Created by Jan Koczuba on 05/08/2025.
 //
-
 import SwiftUI
 
 @MainActor
@@ -98,6 +97,7 @@ extension View {
         self
             .environment(DevPreview.shared.container)
             .environment(LogManager(services: []))
+            .environment(CoreBuilder(interactor: CoreInteractor(container: DevPreview.shared.container)))
     }
 }
 

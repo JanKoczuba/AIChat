@@ -8,9 +8,9 @@ import SwiftUI
 
 struct ExploreView: View {
 
-    @Environment(DependencyContainer.self) private var container
+    @Environment(CoreBuilder.self) private var builder
     @State var viewModel: ExploreViewModel
-
+    
     var body: some View {
         NavigationStack(path: $viewModel.path) {
             List {
@@ -24,17 +24,17 @@ struct ExploreView: View {
                     }
                     .removeListRowFormatting()
                 }
-
+                
                 if !viewModel.popularAvatars.isEmpty {
                     if viewModel.categoryRowTest == .top {
                         categorySection
                     }
                 }
-
+                
                 if !viewModel.featuredAvatars.isEmpty {
                     featuredSection
                 }
-
+                
                 if !viewModel.popularAvatars.isEmpty {
                     if viewModel.categoryRowTest == .original {
                         categorySection
@@ -57,10 +57,10 @@ struct ExploreView: View {
                 }
             })
             .sheet(isPresented: $viewModel.showDevSettings, content: {
-                DevSettingsView(viewModel: DevSettingsViewModel(interactor: CoreInteractor(container: container)))
+                builder.devSettingsView()
             })
             .sheet(isPresented: $viewModel.showCreateAccountView, content: {
-                CreateAccountView(viewModel: CreateAccountViewModel(interactor: CoreInteractor(container: container)))
+                builder.createAccountView()
                     .presentationDetents([.medium])
             })
             .navigationDestinationForTabbarModule(path: $viewModel.path)
@@ -85,7 +85,7 @@ struct ExploreView: View {
             }
         }
     }
-
+        
     private var pushNotificationButton: some View {
         Image(systemName: "bell.fill")
             .font(.headline)
@@ -96,7 +96,7 @@ struct ExploreView: View {
                 viewModel.onPushNotificationButtonPressed()
             }
     }
-
+        
     private var pushNotificationModal: some View {
         CustomModalView(
             title: "Enable push notifications?",
@@ -111,7 +111,7 @@ struct ExploreView: View {
             }
         )
     }
-
+    
     private var devSettingsButton: some View {
         Text("DEV 🤫")
             .badgeButton()
@@ -119,14 +119,14 @@ struct ExploreView: View {
                 viewModel.onDevSettingsPressed()
             }
     }
-
+    
     private var loadingIndicator: some View {
         ProgressView()
             .tint(.accent)
             .padding(40)
             .frame(maxWidth: .infinity)
     }
-
+    
     private var errorMessageView: some View {
         VStack(alignment: .center, spacing: 8) {
             Text("Error")
@@ -143,7 +143,7 @@ struct ExploreView: View {
         .multilineTextAlignment(.center)
         .padding(40)
     }
-
+        
     private var featuredSection: some View {
         Section {
             ZStack {
@@ -164,7 +164,7 @@ struct ExploreView: View {
             Text("Featured")
         }
     }
-
+        
     private var categorySection: some View {
         Section {
             ZStack {
@@ -194,7 +194,7 @@ struct ExploreView: View {
             Text("Categories")
         }
     }
-
+    
     private var popularSection: some View {
         Section {
             ForEach(viewModel.popularAvatars, id: \.self) { avatar in
@@ -212,14 +212,15 @@ struct ExploreView: View {
             Text("Popular")
         }
     }
-
+    
 }
 
 #Preview("Has data") {
     let container = DevPreview.shared.container
     container.register(AvatarManager.self, service: AvatarManager(service: MockAvatarService()))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    return builder.exploreView()
         .previewEnvironment()
 }
 #Preview("Has data w/ Create Acct Test") {
@@ -227,42 +228,48 @@ struct ExploreView: View {
     container.register(AvatarManager.self, service: AvatarManager(service: MockAvatarService()))
     container.register(AuthManager.self, service: AuthManager(service: MockAuthService(user: .mock(isAnonymous: true))))
     container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(createAccountTest: true)))
-
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    
+    return builder.exploreView()
         .previewEnvironment()
 }
 #Preview("CategoryRowTest: original") {
     let container = DevPreview.shared.container
     container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(categoryRowTest: .original)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    return builder.exploreView()
         .previewEnvironment()
 }
 #Preview("CategoryRowTest: top") {
     let container = DevPreview.shared.container
     container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(categoryRowTest: .top)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    return builder.exploreView()
         .previewEnvironment()
 }
 #Preview("CategoryRowTest: hidden") {
     let container = DevPreview.shared.container
     container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(categoryRowTest: .hidden)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    return builder.exploreView()
         .previewEnvironment()
 }
 #Preview("No data") {
     let container = DevPreview.shared.container
     container.register(AvatarManager.self, service: AvatarManager(service: MockAvatarService(avatars: [], delay: 2.0)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    return builder.exploreView()
         .previewEnvironment()
 }
 #Preview("Slow loading") {
     let container = DevPreview.shared.container
     container.register(AvatarManager.self, service: AvatarManager(service: MockAvatarService(delay: 10)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
-    return ExploreView(viewModel: ExploreViewModel(interactor: CoreInteractor(container: container)))
+    return builder.exploreView()
         .previewEnvironment()
 }
